@@ -50,7 +50,7 @@ export function TimeSeriesChart({ points, events, height = 260 }: TimeSeriesChar
 function buildOption(points: MetricPoint[], events: DriftEvent[]): EChartsOption {
   const sortedPoints = [...points].sort((left, right) => Date.parse(left.timestamp) - Date.parse(right.timestamp));
   const values = sortedPoints.map((point) => [point.timestamp, point.value]);
-  const labeledEventIds = labeledMarkers(events);
+  const markerLabels = labeledMarkers(events);
   const markLines = events.map((event) => ({
     xAxis: event.detectedAt,
     lineStyle: {
@@ -59,8 +59,11 @@ function buildOption(points: MetricPoint[], events: DriftEvent[]): EChartsOption
       type: event.severity === "CRITICAL" ? "solid" as const : "dashed" as const
     },
     label: {
-      formatter: labeledEventIds.has(event.id) ? markerLabel(event) : "",
-      color: severityColor[event.severity] ?? "#dc2626"
+      formatter: markerLabels.get(event.id) ?? "",
+      color: severityColor[event.severity] ?? "#dc2626",
+      fontSize: 11,
+      fontWeight: 700,
+      distance: 4
     }
   }));
 
@@ -129,29 +132,34 @@ function buildOption(points: MetricPoint[], events: DriftEvent[]): EChartsOption
 
 function labeledMarkers(events: DriftEvent[]) {
   const sortedEvents = [...events].sort((left, right) => Date.parse(left.detectedAt) - Date.parse(right.detectedAt));
-  const labeled = new Set<string>();
-  const firstOngoingByDetector = new Set<string>();
-  let lastLabeledAt = 0;
+  const labeled = new Map<string, string>();
   const minGapMillis = markerGapMillis(sortedEvents);
+  let cluster: DriftEvent[] = [];
+  let clusterStart = 0;
 
   for (const event of sortedEvents) {
     const timestamp = Date.parse(event.detectedAt);
-    const detectorKey = `${event.key.service}|${event.key.metric}|${event.key.operation ?? ""}|${event.detector}`;
-    const important = event.phase === "STARTED" || event.phase === "RECOVERED";
-    const firstOngoing = event.phase === "ONGOING" && !firstOngoingByDetector.has(detectorKey);
-
-    if (event.phase === "ONGOING") {
-      firstOngoingByDetector.add(detectorKey);
-    }
-    if (!important && !firstOngoing) {
-      continue;
-    }
-    if (!important && timestamp - lastLabeledAt < minGapMillis) {
+    if (!Number.isFinite(timestamp)) {
       continue;
     }
 
-    labeled.add(event.id);
-    lastLabeledAt = timestamp;
+    if (cluster.length === 0) {
+      cluster = [event];
+      clusterStart = timestamp;
+      continue;
+    }
+
+    if (timestamp - clusterStart < minGapMillis) {
+      cluster.push(event);
+    } else {
+      addClusterLabel(labeled, cluster);
+      cluster = [event];
+      clusterStart = timestamp;
+    }
+  }
+
+  if (cluster.length > 0) {
+    addClusterLabel(labeled, cluster);
   }
 
   return labeled;
@@ -163,12 +171,32 @@ function markerGapMillis(events: DriftEvent[]) {
   }
   const times = events.map((event) => Date.parse(event.detectedAt)).filter(Number.isFinite);
   const span = Math.max(...times) - Math.min(...times);
-  return Math.max(20_000, span * 0.08);
+  return Math.max(18_000, span * 0.07);
 }
 
-function markerLabel(event: DriftEvent) {
+function addClusterLabel(labels: Map<string, string>, events: DriftEvent[]) {
+  const representative = [...events].sort(eventPriority)[0];
+  labels.set(representative.id, markerLabel(representative, events.length));
+}
+
+function eventPriority(left: DriftEvent, right: DriftEvent) {
+  return priority(right) - priority(left);
+}
+
+function priority(event: DriftEvent) {
+  const severity = event.severity === "CRITICAL" ? 30 : event.severity === "WARNING" ? 20 : 10;
+  const phase = event.phase === "STARTED" ? 3 : event.phase === "RECOVERED" ? 2 : 1;
+  return severity + phase;
+}
+
+function markerLabel(event: DriftEvent, clusterSize = 1) {
+  const suffix = clusterSize > 1 ? ` +${clusterSize - 1}` : "";
   if (event.phase === "RECOVERED") {
-    return phaseLabel[event.phase];
+    return `${phaseLabel[event.phase]}${suffix}`;
   }
-  return `${phaseLabel[event.phase] ?? event.phase} · ${event.severity}`;
+  return `${phaseLabel[event.phase] ?? event.phase} ${severityShortLabel(event.severity)}${suffix}`;
+}
+
+function severityShortLabel(severity: string) {
+  return severity === "CRITICAL" ? "CRIT" : severity === "WARNING" ? "WARN" : severity;
 }
