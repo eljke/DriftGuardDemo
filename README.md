@@ -23,7 +23,9 @@ cd ../DriftGuardDemo
 
 The UI is available at `http://localhost:8080`.
 
-`Checkout Service` works with only the Spring Boot app. `Kafka Service` needs a reachable Kafka broker; use the full Docker stack below for the complete two-scenario demo.
+`Checkout Service` works with only the Spring Boot app. It publishes observations through DriftGuard's `MetricPointPublisher` port and receives alerts through the starter-managed alert sinks. The starter provides SLF4J logging by default; the demo adds a repository sink so alerts are visible in the UI.
+
+`Kafka Service` needs a reachable Kafka broker; use the full Docker stack below for the complete two-scenario demo.
 
 The checkout screen is organized like a small operations console: summary cards, manual operations, runtime pipeline, metrics grouped by signal type, operation-level aggregates, recent operation log and emitted alerts.
 

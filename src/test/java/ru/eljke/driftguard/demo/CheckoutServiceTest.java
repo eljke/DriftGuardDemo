@@ -2,7 +2,6 @@ package ru.eljke.driftguard.demo;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.Test;
-import ru.eljke.driftguard.demo.detection.DemoDetectionRuntime;
 import ru.eljke.driftguard.demo.event.InMemoryDemoDriftEventRepository;
 import ru.eljke.driftguard.demo.service.CheckoutMode;
 import ru.eljke.driftguard.demo.service.CheckoutOperationRequest;
@@ -65,7 +64,7 @@ class CheckoutServiceTest {
 
     private static CheckoutService newService() {
         return new CheckoutService(
-                new DemoDetectionRuntime(),
+                point -> java.util.List.of(),
                 new InMemoryDemoDriftEventRepository(),
                 new SimpleMeterRegistry()
         );

@@ -6,11 +6,11 @@ import io.micrometer.core.instrument.Timer;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.eljke.driftguard.core.adapter.MetricPointPublisher;
 import ru.eljke.driftguard.core.domain.DriftEvent;
 import ru.eljke.driftguard.core.domain.MetricKey;
 import ru.eljke.driftguard.core.domain.MetricKind;
 import ru.eljke.driftguard.core.domain.MetricPoint;
-import ru.eljke.driftguard.demo.detection.DemoDetectionRuntime;
 import ru.eljke.driftguard.demo.event.DemoDriftEventRepository;
 import ru.eljke.driftguard.demo.event.DemoStoredDriftEvent;
 
@@ -30,7 +30,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Small checkout service that emits operational metrics into DriftGuard.
+ * Small checkout service that emits operational metrics through the DriftGuard
+ * application-facing publisher port.
  */
 @Service
 @RequiredArgsConstructor
@@ -45,7 +46,7 @@ public class CheckoutService {
     private static final int OPERATION_HISTORY_LIMIT = 220;
     private static final int SERVICE_EVENT_LIMIT = 2000;
 
-    private final DemoDetectionRuntime detectionRuntime;
+    private final MetricPointPublisher metricPointPublisher;
     private final DemoDriftEventRepository eventRepository;
     private final MeterRegistry meterRegistry;
     private final Random random = new Random(42L);
@@ -108,9 +109,7 @@ public class CheckoutService {
         List<DriftEvent> alerts = new ArrayList<>();
         points.forEach(point -> {
             recentMetrics.add(point);
-            List<DriftEvent> detected = detectionRuntime.detect(point);
-            alerts.addAll(detected);
-            eventRepository.appendAll("service", "checkout-service", detected);
+            alerts.addAll(metricPointPublisher.publish(point));
         });
 
         CheckoutOperationResult result = new CheckoutOperationResult(
@@ -158,7 +157,6 @@ public class CheckoutService {
     }
 
     public synchronized CheckoutServiceSnapshot resetHistory() {
-        detectionRuntime.reset();
         eventRepository.clearSource("service");
         recentOperations.clear();
         recentMetrics.clear();
