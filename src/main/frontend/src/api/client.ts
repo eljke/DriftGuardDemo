@@ -3,6 +3,10 @@ import type {
   DemoConfigurationView,
   DetectionBenchmarkReport,
   DetectionMetrics,
+  CheckoutMode,
+  CheckoutOperationRequest,
+  CheckoutOperationResult,
+  CheckoutServiceSnapshot,
   DemoHelp,
   DemoRunResult,
   DemoScenarioRequest,
@@ -51,6 +55,15 @@ async function errorMessage(response: Response) {
 }
 
 export const api = {
+    serviceStatus: () => request<CheckoutServiceSnapshot>("/api/service"),
+    serviceOperations: () => request<string[]>("/api/service/operations"),
+    executeServiceOperation: (body: CheckoutOperationRequest) => request<CheckoutOperationResult>("/api/service/operations", {
+        method: "POST",
+        body: JSON.stringify(body)
+    }),
+    startServiceTraffic: () => request<CheckoutServiceSnapshot>("/api/service/traffic/start", {method: "POST"}),
+    stopServiceTraffic: () => request<CheckoutServiceSnapshot>("/api/service/traffic/stop", {method: "POST"}),
+    setServiceMode: (mode: CheckoutMode) => request<CheckoutServiceSnapshot>(`/api/service/mode/${mode}`, {method: "POST"}),
     overview: () => request<DemoRunResult>("/api/demo"),
     events: () => request<DriftEvent[]>("/api/demo/events"),
     storedEvents: () => request<DemoStoredDriftEvent[]>("/api/demo/events/stored"),

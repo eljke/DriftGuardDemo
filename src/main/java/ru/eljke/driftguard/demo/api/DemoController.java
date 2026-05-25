@@ -198,6 +198,12 @@ public class DemoController {
     @Operation(summary = "Return available demo API routes")
     public Map<String, String> help() {
         return Map.ofEntries(
+                Map.entry("serviceStatus", "GET /api/service"),
+                Map.entry("serviceOperations", "GET /api/service/operations"),
+                Map.entry("executeServiceOperation", "POST /api/service/operations"),
+                Map.entry("startServiceTraffic", "POST /api/service/traffic/start"),
+                Map.entry("stopServiceTraffic", "POST /api/service/traffic/stop"),
+                Map.entry("setServiceMode", "POST /api/service/mode/{mode}"),
                 Map.entry("overview", "GET /api/demo"),
                 Map.entry("events", "GET /api/demo/events"),
                 Map.entry("quality", "GET /api/demo/quality"),

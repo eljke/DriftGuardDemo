@@ -238,6 +238,40 @@ export interface DemoConfigurationView {
   detectors: DetectorConfigurationView[];
 }
 
+export type CheckoutMode = "NORMAL" | "DEGRADED" | "OUTAGE";
+
+export interface CheckoutOperationRequest {
+  operation?: string;
+  customerId?: string;
+}
+
+export interface CheckoutOperationResult {
+  id: number;
+  operation: string;
+  customerId: string;
+  success: boolean;
+  latencyMillis: number;
+  queueSize: number;
+  mode: CheckoutMode;
+  occurredAt: string;
+  alerts: DriftEvent[];
+}
+
+export interface CheckoutServiceSnapshot {
+  running: boolean;
+  mode: CheckoutMode;
+  operations: number;
+  successes: number;
+  failures: number;
+  errorRate: number;
+  meanLatencyMillis: number;
+  queueSize: number;
+  throughputPerMinute: number;
+  recentOperations: CheckoutOperationResult[];
+  recentMetrics: MetricPoint[];
+  recentAlerts: DriftEvent[];
+}
+
 export interface DetectorConfigurationView {
   name: string;
   algorithm: string;

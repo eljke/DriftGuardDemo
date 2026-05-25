@@ -9,17 +9,19 @@ export function AppShell({
   kafka,
   overview,
   page,
-  onPageChange
+  onPageChange,
+  showLab
 }: {
   children: ReactNode;
   kafka?: KafkaDemoStatus;
   overview?: DemoRunResult;
   page: Page;
   onPageChange: (page: Page) => void;
+  showLab: boolean;
 }) {
   return (
     <div className="app-shell">
-      <Sidebar page={page} onPageChange={onPageChange} />
+      <Sidebar page={page} onPageChange={onPageChange} showLab={showLab} />
       <main className="main">
         <Header overview={overview} kafka={kafka} />
         {children}

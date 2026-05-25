@@ -877,7 +877,7 @@ th {
     }
 
     .nav {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
     }
 
     .nav-item {
@@ -1412,6 +1412,103 @@ th {
 .product-map-footer strong {
     color: var(--text);
     font-size: 18px;
+}
+
+.service-page .service-hero {
+    overflow: hidden;
+}
+
+.service-control-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.service-control-row h2 {
+    font-size: 24px;
+}
+
+.mode-switch {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 16px;
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface-muted);
+}
+
+.mode-switch button {
+    min-height: 34px;
+    border: 0;
+    border-radius: 8px;
+    padding: 7px 12px;
+    color: var(--muted);
+    background: transparent;
+    font-weight: 800;
+}
+
+.mode-switch button.active {
+    color: #ffffff;
+    background: var(--accent);
+}
+
+.service-operation-grid,
+.service-pipeline {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.operation-card {
+    display: grid;
+    gap: 8px;
+    min-height: 120px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--text);
+    background: var(--surface-muted);
+    text-align: left;
+}
+
+.operation-card svg {
+    color: var(--accent);
+}
+
+.operation-card strong,
+.operation-card span {
+    display: block;
+}
+
+.operation-card span {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.operation-card:hover {
+    border-color: var(--accent);
+    background: #eff6ff;
+}
+
+@media (max-width: 1180px) {
+    .service-operation-grid,
+    .service-pipeline {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 760px) {
+    .service-control-row {
+        display: grid;
+    }
+
+    .service-operation-grid,
+    .service-pipeline {
+        grid-template-columns: 1fr;
+    }
 }
 
 .api-status-head {

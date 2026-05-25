@@ -1,6 +1,5 @@
 package ru.eljke.driftguard.demo.scenario;
 
-import jakarta.annotation.PostConstruct;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
@@ -65,11 +64,6 @@ public class DemoScenarioService {
     });
     private volatile DemoRunResult lastResult;
     private volatile ScheduledFuture<?> playbackTask;
-
-    @PostConstruct
-    public void runOnStartup() {
-        run("latency-step");
-    }
 
     public DemoRunResult runLatencyDegradation() {
         return run("latency-step");

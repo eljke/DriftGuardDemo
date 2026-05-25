@@ -1,6 +1,6 @@
 # DriftGuard Demo
 
-DriftGuard Demo is a standalone Spring Boot observability product that consumes the DriftGuard library. It simulates service metrics, runs drift detection, stores recent drift events and exposes a React UI plus REST/OpenAPI endpoints.
+DriftGuard Demo is a standalone Spring Boot checkout service that consumes the DriftGuard library. The default UI runs real demo operations, publishes operational metrics, lets DriftGuard detect drift and stores recent alert events.
 
 ## Prerequisite
 
@@ -19,6 +19,8 @@ cd ../DriftGuardDemo
 ```
 
 The UI is available at `http://localhost:8080`.
+
+Synthetic and Kafka lab screens are still available for algorithm demonstrations, but they are hidden by default. Enable them with `?lab=1` or by setting `localStorage.driftguard.showLab = "true"` in the browser.
 
 ## Full Stack
 

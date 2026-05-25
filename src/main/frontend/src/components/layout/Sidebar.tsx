@@ -2,7 +2,7 @@ import { Gauge } from "lucide-react";
 import { navigation, type Page } from "../../app/navigation";
 import { useI18n } from "../../i18n";
 
-export function Sidebar({ page, onPageChange }: { page: Page; onPageChange: (page: Page) => void }) {
+export function Sidebar({ page, onPageChange, showLab }: { page: Page; onPageChange: (page: Page) => void; showLab: boolean }) {
   const { t } = useI18n();
 
   return (
@@ -17,7 +17,7 @@ export function Sidebar({ page, onPageChange }: { page: Page; onPageChange: (pag
         </div>
       </div>
       <nav className="nav">
-        {navigation.map((item) => {
+        {navigation.filter((item) => showLab || !item.lab).map((item) => {
           const Icon = item.icon;
           return (
             <button

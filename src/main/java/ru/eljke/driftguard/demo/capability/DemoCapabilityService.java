@@ -8,10 +8,45 @@ import java.util.List;
 public class DemoCapabilityService {
     public List<DemoCapabilityGroup> capabilities() {
         return List.of(
+                checkoutService(),
                 detectionEngine(),
                 kafkaOperations(),
                 qualityAndProfiles(),
                 observabilityAndTooling()
+        );
+    }
+
+    private DemoCapabilityGroup checkoutService() {
+        return new DemoCapabilityGroup(
+                "checkout-service",
+                "Checkout service",
+                "A small operational service emits business metrics and uses DriftGuard as an embedded alerting library.",
+                List.of(
+                        ready(
+                                "business-operations",
+                                "Business operations",
+                                "Execute checkout operations through REST and publish latency, error-rate, throughput and queue-size metrics.",
+                                "service",
+                                List.of("GET /api/service", "POST /api/service/operations"),
+                                List.of("Checkout Service")
+                        ),
+                        ready(
+                                "runtime-degradation",
+                                "Runtime degradation mode",
+                                "Switch the service between normal, degraded and outage behavior to show alerts without synthetic scenario screens.",
+                                "service",
+                                List.of("POST /api/service/mode/{mode}", "POST /api/service/traffic/start"),
+                                List.of("Checkout Service")
+                        ),
+                        ready(
+                                "embedded-alerting",
+                                "Embedded DriftGuard alerting",
+                                "The service calls DriftGuard directly and stores emitted DriftEvent alerts as operational incidents.",
+                                "service",
+                                List.of("GET /api/service", "GET /api/demo/events/stored"),
+                                List.of("Checkout Service")
+                        )
+                )
         );
     }
 
