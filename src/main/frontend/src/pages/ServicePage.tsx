@@ -3,7 +3,7 @@ import { AlertTriangle, CheckCircle2, Play, RotateCcw, Send, Square, Zap } from 
 import type { ReactNode } from "react";
 import { api } from "../api/client";
 import { EventsTable } from "../features/events/EventsTable";
-import { StreamGrid } from "../features/common/StreamGrid";
+import { ServiceMetricsPanel } from "../features/service/ServiceMetricsPanel";
 import { useI18n } from "../i18n";
 import { readableError } from "../lib/format";
 import { MetricCard, Notice, Panel } from "../components/ui";
@@ -86,7 +86,12 @@ export function ServicePage({ service, operations }: { service?: CheckoutService
       </Panel>
 
       <Panel title={t("service.metrics")}>
-        <StreamGrid points={service?.recentMetrics ?? []} events={service?.recentAlerts ?? []} running={Boolean(service?.running)} />
+        <ServiceMetricsPanel
+          points={service?.recentMetrics ?? []}
+          events={service?.recentAlerts ?? []}
+          operations={service?.recentOperations ?? []}
+          running={Boolean(service?.running)}
+        />
       </Panel>
 
       <Panel title={t("service.recentOperations")}>

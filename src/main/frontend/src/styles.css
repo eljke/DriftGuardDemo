@@ -433,6 +433,96 @@ h2 {
     padding: 14px;
 }
 
+.service-observability {
+    display: grid;
+    gap: 18px;
+}
+
+.metric-sections {
+    display: grid;
+    gap: 16px;
+}
+
+.metric-section {
+    display: grid;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-muted);
+}
+
+.section-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.section-head strong,
+.section-head span {
+    display: block;
+}
+
+.section-head span {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.metric-streams {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.compact-stream {
+    background: var(--surface);
+}
+
+.operation-breakdown {
+    display: grid;
+    gap: 12px;
+}
+
+.operation-breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.operation-summary-card {
+    padding: 13px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-muted);
+}
+
+.operation-summary-card strong {
+    display: block;
+    font-size: 13px;
+}
+
+.operation-summary-card dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin: 12px 0 0;
+}
+
+.operation-summary-card dt {
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.operation-summary-card dd {
+    margin: 3px 0 0;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 800;
+}
+
 .stream-head,
 .detector-head,
 .progress-label {
@@ -909,6 +999,8 @@ th {
     .summary-grid,
     .scenario-grid,
     .producer-grid,
+    .metric-streams,
+    .operation-breakdown-grid,
     .stream-grid,
     .detector-grid,
     .tool-grid {

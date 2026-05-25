@@ -25,6 +25,8 @@ The UI is available at `http://localhost:8080`.
 
 `Checkout Service` works with only the Spring Boot app. `Kafka Service` needs a reachable Kafka broker; use the full Docker stack below for the complete two-scenario demo.
 
+The checkout screen is organized like a small operations console: summary cards, manual operations, runtime pipeline, metrics grouped by signal type, operation-level aggregates, recent operation log and emitted alerts.
+
 Synthetic and overview lab screens are still available for algorithm demonstrations, but they are hidden by default. Enable them with `?lab=1` or by setting `localStorage.driftguard.showLab = "true"` in the browser.
 
 ## Full Stack
