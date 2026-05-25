@@ -6,6 +6,7 @@ import ru.eljke.driftguard.core.domain.DriftEvent;
 import ru.eljke.driftguard.core.domain.DriftEventPhase;
 import ru.eljke.driftguard.core.domain.MetricPoint;
 import ru.eljke.driftguard.demo.detection.DemoDetectionRuntime;
+import ru.eljke.driftguard.demo.event.InMemoryDemoDriftEventRepository;
 import ru.eljke.driftguard.demo.scenario.DemoRunResult;
 import ru.eljke.driftguard.demo.scenario.DemoScenarioRequest;
 import ru.eljke.driftguard.demo.scenario.DemoScenarioService;
@@ -21,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class DemoScenarioServiceTest {
     @Test
     void runLatencyDegradationProducesEvents() {
-        DemoRunResult result = new DemoScenarioService(new DemoDetectionRuntime(), new SimpleMeterRegistry()).runLatencyDegradation();
+        DemoRunResult result = service().runLatencyDegradation();
 
         assertFalse(result.events().isEmpty());
         assertTrue(result.quality().detected());
@@ -45,11 +46,19 @@ class DemoScenarioServiceTest {
 
     @Test
     void runScenarioUsesRequestedSampleCount() {
-        DemoScenarioService service = new DemoScenarioService(new DemoDetectionRuntime(), new SimpleMeterRegistry());
+        DemoScenarioService service = service();
 
         DemoRunResult result = service.run("latency-step", new DemoScenarioRequest(240));
 
         assertEquals(240, result.metricPoints());
         assertEquals(240, result.samplePoints().size());
+    }
+
+    private static DemoScenarioService service() {
+        return new DemoScenarioService(
+                new DemoDetectionRuntime(),
+                new SimpleMeterRegistry(),
+                new InMemoryDemoDriftEventRepository()
+        );
     }
 }

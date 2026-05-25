@@ -11,7 +11,7 @@ import ru.eljke.driftguard.demo.error.DemoErrorReason;
 import java.time.Instant;
 
 /**
- * English demo documentation.
+ * Converts demo and DriftGuard exceptions into stable REST error responses.
  */
 @RestControllerAdvice
 public class DemoExceptionHandler {

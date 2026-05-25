@@ -2,6 +2,7 @@ package ru.eljke.driftguard.demo.api;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,6 +38,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/demo")
 @Tag(name = "Demo", description = "DriftGuard demo REST API")
+@RequiredArgsConstructor
 public class DemoController {
     private final DemoCapabilityService capabilityService;
     private final DemoScenarioService service;
@@ -46,81 +48,63 @@ public class DemoController {
     private final DemoConfigurationService configurationService;
     private final DemoDriftEventRepository eventRepository;
 
-    public DemoController(
-            DemoCapabilityService capabilityService,
-            DemoScenarioService service,
-            KafkaDemoService kafkaDemoService,
-            KafkaOperationsService kafkaOperationsService,
-            DemoToolProperties toolProperties,
-            DemoConfigurationService configurationService,
-            DemoDriftEventRepository eventRepository
-    ) {
-        this.capabilityService = capabilityService;
-        this.service = service;
-        this.kafkaDemoService = kafkaDemoService;
-        this.kafkaOperationsService = kafkaOperationsService;
-        this.toolProperties = toolProperties;
-        this.configurationService = configurationService;
-        this.eventRepository = eventRepository;
-    }
-
     @GetMapping
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Return the latest synthetic scenario result")
     public DemoRunResult overview() {
         return service.lastResult();
     }
 
     @GetMapping("/events")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Return recent drift events")
     public List<DriftEvent> events() {
         return eventRepository.recentEvents(200);
     }
 
     @GetMapping("/events/stored")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Return stored drift events with source metadata")
     public List<DemoStoredDriftEvent> storedEvents() {
         return eventRepository.recent(200);
     }
 
     @PostMapping("/events/clear")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Clear stored drift events")
     public Map<String, Object> clearStoredEvents() {
         eventRepository.clear();
         return Map.of("cleared", true);
     }
 
     @GetMapping("/quality")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Return quality metrics for the latest run")
     public Object quality() {
         return service.lastResult().quality();
     }
 
     @GetMapping("/benchmark")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Run the detector benchmark for the active profile")
     public DetectionBenchmarkReport benchmark() {
         return service.benchmark();
     }
 
     @GetMapping("/benchmark/profiles")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Compare benchmark results across detector profiles")
     public List<DetectionBenchmarkReport> benchmarkProfiles() {
         return service.benchmarkProfiles();
     }
 
     @GetMapping("/scenarios")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "List available synthetic scenarios")
     public List<DemoScenarioDescriptor> scenarios() {
         return service.scenarios();
     }
 
     @PostMapping("/run")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Run the default latency degradation scenario")
     public DemoRunResult rerun() {
         return service.runLatencyDegradation();
     }
 
     @PostMapping("/run/{scenario}")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Run a synthetic scenario immediately")
     public DemoRunResult runScenario(
             @PathVariable("scenario") String scenario,
             @RequestBody(required = false) DemoScenarioRequest request
@@ -129,7 +113,7 @@ public class DemoController {
     }
 
     @PostMapping("/live/{scenario}")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Start live playback for a synthetic scenario")
     public DemoRunResult startLiveScenario(
             @PathVariable("scenario") String scenario,
             @RequestBody(required = false) DemoScenarioRequest request
@@ -138,26 +122,26 @@ public class DemoController {
     }
 
     @PostMapping("/live/stop")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Stop live scenario playback")
     public DemoRunResult stopLiveScenario() {
         service.stopLive();
         return service.lastResult();
     }
 
     @GetMapping("/kafka")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Return Kafka demo playback status")
     public KafkaDemoStatus kafkaStatus() {
         return kafkaDemoService.status();
     }
 
     @GetMapping("/kafka/operations")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Return Kafka Streams processing metrics")
     public KafkaOperationsSnapshot kafkaOperations() {
         return kafkaOperationsService.snapshot();
     }
 
     @PostMapping("/kafka/start/{scenario}")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Start Kafka-backed scenario playback")
     public KafkaDemoStatus startKafkaScenario(
             @PathVariable("scenario") String scenario,
             @RequestBody(required = false) DemoScenarioRequest request
@@ -166,42 +150,42 @@ public class DemoController {
     }
 
     @PostMapping("/kafka/replay")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Replay a Kafka scenario with custom options")
     public KafkaDemoStatus replayKafkaScenario(@RequestBody(required = false) KafkaReplayRequest request) {
         return kafkaDemoService.replay(request);
     }
 
     @PostMapping("/kafka/stop")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Stop Kafka scenario playback")
     public KafkaDemoStatus stopKafkaScenario() {
         return kafkaDemoService.stop();
     }
 
     @GetMapping("/capabilities")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Return the demo capability map")
     public List<DemoCapabilityGroup> capabilities() {
         return capabilityService.capabilities();
     }
 
     @GetMapping("/tools")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Return links to local observability tools")
     public List<ToolLink> tools() {
         return List.of(
-                new ToolLink("kafka-ui", "Kafka UI", toolProperties.getKafkaUiUrl(), "English demo text."),
-                new ToolLink("prometheus", "Prometheus", toolProperties.getPrometheusUrl(), "English demo text."),
-                new ToolLink("grafana", "Grafana", toolProperties.getGrafanaUrl(), "English demo text."),
-                new ToolLink("swagger", "Swagger", toolProperties.getSwaggerUrl(), "REST API demo-application.")
+                new ToolLink("kafka-ui", "Kafka UI", toolProperties.getKafkaUiUrl(), "Inspect demo topics, produced metric points and drift events."),
+                new ToolLink("prometheus", "Prometheus", toolProperties.getPrometheusUrl(), "Query DriftGuard and demo runtime metrics."),
+                new ToolLink("grafana", "Grafana", toolProperties.getGrafanaUrl(), "Open dashboards for detector throughput, latency and emitted alerts."),
+                new ToolLink("swagger", "Swagger", toolProperties.getSwaggerUrl(), "Explore the demo REST API.")
         );
     }
 
     @GetMapping("/configuration")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Return active detector and Kafka configuration")
     public DemoConfigurationView configuration() {
         return configurationService.current();
     }
 
     @PostMapping("/configuration/profile/{profile}")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Switch the active detector profile")
     public DemoConfigurationView updateProfile(@PathVariable("profile") String profile) {
         try {
             return configurationService.updateProfile(DemoDetectorProfile.parse(profile));
@@ -211,7 +195,7 @@ public class DemoController {
     }
 
     @GetMapping("/help")
-    @Operation(summary = "DriftGuard demo endpoint")
+    @Operation(summary = "Return available demo API routes")
     public Map<String, String> help() {
         return Map.ofEntries(
                 Map.entry("overview", "GET /api/demo"),

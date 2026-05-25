@@ -2,6 +2,7 @@ package ru.eljke.driftguard.demo.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PreDestroy;
+import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -50,17 +51,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * English demo documentation.
- * English demo documentation.
- * English demo documentation.
+ * Drives Kafka-backed scenario playback for the standalone demo.
+ *
+ * <p>The service creates demo topics, publishes synthetic metric streams and
+ * consumes DriftGuard alert events emitted by the Kafka Streams topology.</p>
  */
 @Service
+@RequiredArgsConstructor
 public class KafkaDemoService {
     private final DemoKafkaProperties properties;
     private final DriftGuardKafkaStreamsManager streamsManager;
     private final DemoDetectionRuntime detectionRuntime;
     private final DemoDriftEventRepository eventRepository;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = DriftGuardObjectMapper.create();
     private final AtomicLong runSequence = new AtomicLong();
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(8, runnable -> {
         Thread thread = new Thread(runnable, "driftguard-kafka-demo");
@@ -81,19 +84,6 @@ public class KafkaDemoService {
     private volatile boolean replay;
     private volatile double speed = 1.0;
     private volatile String error;
-
-    public KafkaDemoService(
-            DemoKafkaProperties properties,
-            DriftGuardKafkaStreamsManager streamsManager,
-            DemoDetectionRuntime detectionRuntime,
-            DemoDriftEventRepository eventRepository
-    ) {
-        this.properties = properties;
-        this.streamsManager = streamsManager;
-        this.detectionRuntime = detectionRuntime;
-        this.eventRepository = eventRepository;
-        this.objectMapper = DriftGuardObjectMapper.create();
-    }
 
     public synchronized KafkaDemoStatus start(String scenario) {
         return startInternal(scenario, false, 1.0, false, null);
@@ -364,7 +354,7 @@ public class KafkaDemoService {
             try {
                 current.close();
             } catch (RuntimeException ignored) {
-                // English implementation note.
+                // The consumer is already stopping; close failures should not mask the original shutdown path.
             }
         }
     }
@@ -453,7 +443,7 @@ public class KafkaDemoService {
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
         } catch (ExecutionException ignored) {
-            // English implementation note.
+            // The consumer loop stores its own error message for the status endpoint.
         } catch (java.util.concurrent.TimeoutException exception) {
             error = "Kafka demo consumer did not stop within timeout";
         }
@@ -475,13 +465,14 @@ public class KafkaDemoService {
     }
 
     private static int at(int samples, double ratio) {
-        return Math.max(1, Math.min(samples - 2, (int) Math.round(samples * ratio)));
+        return Math.clamp((int) Math.round(samples * ratio), 1, samples - 2);
     }
 
     private static int length(int samples, double ratio) {
-        return Math.max(8, Math.min(samples - at(samples, 0.43), (int) Math.round(samples * ratio)));
+        return Math.clamp((int) Math.round(samples * ratio), 8, samples - at(samples, 0.43));
     }
 
+    @RequiredArgsConstructor
     private final class ProducerPlayback {
         private final String id;
         private final String service;
@@ -492,24 +483,6 @@ public class KafkaDemoService {
         private final KafkaProducer<String, MetricPoint> producer;
         private final AtomicInteger index = new AtomicInteger();
         private volatile ScheduledFuture<?> task;
-
-        private ProducerPlayback(
-                String id,
-                String service,
-                String metric,
-                String operation,
-                List<MetricPoint> points,
-                boolean liveClock,
-                KafkaProducer<String, MetricPoint> producer
-        ) {
-            this.id = id;
-            this.service = service;
-            this.metric = metric;
-            this.operation = operation;
-            this.points = points;
-            this.liveClock = liveClock;
-            this.producer = producer;
-        }
 
         private boolean publishNext() {
             int current = index.getAndIncrement();

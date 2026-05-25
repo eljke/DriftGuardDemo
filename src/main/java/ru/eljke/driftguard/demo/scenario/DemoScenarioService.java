@@ -3,7 +3,7 @@ package ru.eljke.driftguard.demo.scenario;
 import jakarta.annotation.PostConstruct;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.eljke.driftguard.core.domain.DriftEvent;
 import ru.eljke.driftguard.core.domain.MetricKey;
@@ -14,7 +14,6 @@ import ru.eljke.driftguard.demo.detection.DemoDetectionRuntime;
 import ru.eljke.driftguard.demo.detection.DemoDetectorProfile;
 import ru.eljke.driftguard.demo.error.DemoErrorReason;
 import ru.eljke.driftguard.demo.event.DemoDriftEventRepository;
-import ru.eljke.driftguard.demo.event.InMemoryDemoDriftEventRepository;
 import ru.eljke.driftguard.testkit.DetectionEvaluator;
 import ru.eljke.driftguard.testkit.GradualDriftScenario;
 import ru.eljke.driftguard.testkit.DetectionBenchmarkReport;
@@ -41,10 +40,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * English demo documentation.
- * stores the result for the REST API.
+ * Runs synthetic drift scenarios and stores the latest result for the REST API.
  */
 @Service
+@RequiredArgsConstructor
 public class DemoScenarioService {
     private static final List<DemoScenarioDescriptor> SCENARIOS = List.of(
             new DemoScenarioDescriptor("latency-step", "Latency step degradation", "latency", "Sharp latency increase for the checkout endpoint."),
@@ -66,17 +65,6 @@ public class DemoScenarioService {
     });
     private volatile DemoRunResult lastResult;
     private volatile ScheduledFuture<?> playbackTask;
-
-    @Autowired
-    public DemoScenarioService(DemoDetectionRuntime runtime, MeterRegistry meterRegistry) {
-        this(runtime, meterRegistry, new InMemoryDemoDriftEventRepository());
-    }
-
-    public DemoScenarioService(DemoDetectionRuntime runtime, MeterRegistry meterRegistry, DemoDriftEventRepository eventRepository) {
-        this.runtime = runtime;
-        this.meterRegistry = meterRegistry;
-        this.eventRepository = eventRepository;
-    }
 
     @PostConstruct
     public void runOnStartup() {

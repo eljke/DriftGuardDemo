@@ -3,7 +3,7 @@ package ru.eljke.driftguard.demo.detection;
 import java.util.Locale;
 
 /**
- * English demo documentation.
+ * Predefined detector sensitivity profiles exposed by the demo UI.
  */
 public enum DemoDetectorProfile {
     AGGRESSIVE,

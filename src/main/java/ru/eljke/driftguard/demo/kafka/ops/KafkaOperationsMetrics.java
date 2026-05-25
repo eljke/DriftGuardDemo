@@ -1,16 +1,16 @@
 package ru.eljke.driftguard.demo.kafka.ops;
 
 /**
- * English demo documentation.
+ * Aggregated Micrometer counters and timers for Kafka detection processing.
  *
- * @param processedPoints documented value
- * @param emittedEvents documented value
- * @param failedPoints documented value
- * @param routedErrors documented value
- * @param durationMeasurements documented value
- * @param totalDurationMillis documented value
- * @param maxDurationMillis documented value
- * @param meanDurationMillis documented value
+ * @param processedPoints number of metric points processed by the topology
+ * @param emittedEvents number of drift events emitted by the topology
+ * @param failedPoints number of points that failed processing
+ * @param routedErrors number of failures routed to the error topic
+ * @param durationMeasurements number of recorded processing-duration samples
+ * @param totalDurationMillis total recorded processing duration in milliseconds
+ * @param maxDurationMillis maximum recorded processing duration in milliseconds
+ * @param meanDurationMillis average processing duration in milliseconds
  */
 public record KafkaOperationsMetrics(
         double processedPoints,

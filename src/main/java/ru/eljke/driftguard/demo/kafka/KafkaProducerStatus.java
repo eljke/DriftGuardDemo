@@ -1,15 +1,15 @@
 package ru.eljke.driftguard.demo.kafka;
 
 /**
- * English demo documentation.
+ * Playback status for one Kafka demo producer.
  *
- * @param id documented value
- * @param service documented value
- * @param metric documented value
- * @param operation documented value
- * @param producedPoints documented value
- * @param totalPoints documented value
- * @param running documented value
+ * @param id producer identifier
+ * @param service metric service name
+ * @param metric metric name
+ * @param operation operation or endpoint represented by the metric
+ * @param producedPoints number of points already sent
+ * @param totalPoints total points in the scenario
+ * @param running whether the producer is still publishing
  */
 public record KafkaProducerStatus(
         String id,

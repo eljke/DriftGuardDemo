@@ -9,11 +9,10 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * English demo documentation.
+ * Thread-safe in-memory implementation used by the standalone demo.
  *
- * English demo documentation.
- * English demo documentation.
- * English demo documentation.
+ * <p>The repository keeps only recent events to avoid unbounded memory growth
+ * during repeated scenario runs.</p>
  */
 @Repository
 public class InMemoryDemoDriftEventRepository implements DemoDriftEventRepository {

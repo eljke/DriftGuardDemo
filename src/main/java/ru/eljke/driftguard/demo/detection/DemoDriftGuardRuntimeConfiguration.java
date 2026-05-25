@@ -12,7 +12,7 @@ import ru.eljke.driftguard.spring.DriftGuardKafkaStreamsManager;
 import ru.eljke.driftguard.spring.DriftGuardProperties;
 
 /**
- * English demo documentation.
+ * Wires the demo Kafka Streams runtime to the active in-memory DriftGuard configuration.
  */
 @Configuration
 public class DemoDriftGuardRuntimeConfiguration {

@@ -8,8 +8,7 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 
 /**
- * English demo documentation.
- * English demo documentation.
+ * Kafka settings used by the standalone demo playback and UI consumers.
  */
 @Getter
 @Setter
@@ -17,40 +16,37 @@ import java.time.Duration;
 @ConfigurationProperties(prefix = "demo.kafka")
 public class DemoKafkaProperties {
     /**
-     * English demo documentation.
-     * English demo documentation.
+     * Enables endpoints that start Kafka-backed demo playback.
      */
     private boolean enabled = true;
 
     /**
-     * English demo documentation.
+     * Kafka bootstrap servers used by demo producers and consumers.
      */
     private String bootstrapServers = "localhost:9092";
 
     /**
-     * English demo documentation.
+     * Topic where synthetic metric points are published.
      */
     private String inputTopic = "driftguard.demo.metrics";
 
     /**
-     * English demo documentation.
+     * Topic where DriftGuard emits detected drift events.
      */
     private String outputTopic = "driftguard.demo.drift-events";
 
     /**
-     * English demo documentation.
-     * English demo documentation.
-     * English demo documentation.
+     * Kafka Streams application id for the demo topology.
      */
     private String applicationId = "driftguard-demo-streams";
 
     /**
-     * English demo documentation.
+     * Consumer group prefix used by the UI event reader.
      */
     private String consumerGroup = "driftguard-demo-ui";
 
     /**
-     * English demo documentation.
+     * Delay between published scenario points before playback speed is applied.
      */
     private Duration playbackInterval = Duration.ofMillis(150);
 }

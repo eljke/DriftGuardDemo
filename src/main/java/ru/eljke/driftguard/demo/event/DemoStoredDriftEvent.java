@@ -5,12 +5,12 @@ import ru.eljke.driftguard.core.domain.DriftEvent;
 import java.time.Instant;
 
 /**
- * English demo documentation.
+ * Drift event enriched with demo storage metadata.
  *
- * @param source documented value
- * @param runId documented value
- * @param receivedAt documented value
- * @param event documented value
+ * @param source scenario source, such as synthetic, live or kafka
+ * @param runId scenario run identifier
+ * @param receivedAt time when the demo stored the event
+ * @param event DriftGuard drift event payload
  */
 public record DemoStoredDriftEvent(
         String source,

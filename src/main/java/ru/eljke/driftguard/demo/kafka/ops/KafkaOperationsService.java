@@ -3,6 +3,7 @@ package ru.eljke.driftguard.demo.kafka.ops;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import ru.eljke.driftguard.demo.kafka.KafkaDemoService;
@@ -13,9 +14,10 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * English demo documentation.
+ * Exposes operational state for the Kafka Streams drift-detection pipeline.
  */
 @Service
+@RequiredArgsConstructor
 public class KafkaOperationsService {
     static final String POINTS = "driftguard.kafka.detection.points";
     static final String EVENTS = "driftguard.kafka.detection.events";
@@ -25,21 +27,12 @@ public class KafkaOperationsService {
 
     private final KafkaDemoService kafkaDemoService;
     private final DriftGuardProperties driftGuardProperties;
-    private final MeterRegistry meterRegistry;
-
-    public KafkaOperationsService(
-            KafkaDemoService kafkaDemoService,
-            DriftGuardProperties driftGuardProperties,
-            ObjectProvider<MeterRegistry> meterRegistry
-    ) {
-        this.kafkaDemoService = kafkaDemoService;
-        this.driftGuardProperties = driftGuardProperties;
-        this.meterRegistry = meterRegistry.getIfAvailable();
-    }
+    private final ObjectProvider<MeterRegistry> meterRegistryProvider;
 
     public KafkaOperationsSnapshot snapshot() {
         KafkaDemoStatus status = kafkaDemoService.status();
         DriftGuardProperties.KafkaProperties kafka = driftGuardProperties.getKafka();
+        boolean telemetryEnabled = meterRegistryProvider.getIfAvailable() != null;
         KafkaOperationsMetrics metrics = metrics();
         return new KafkaOperationsSnapshot(
                 status.enabled(),
@@ -58,13 +51,14 @@ public class KafkaOperationsService {
                 kafka.getOutputTopic(),
                 readStringProperty(kafka, "getRuntimeStateStoreName", "driftguard-runtime-state"),
                 readStringProperty(kafka, "getDetectionErrorMode", "FAIL_FAST"),
-                meterRegistry != null,
+                telemetryEnabled,
                 metrics,
                 status.error()
         );
     }
 
     private KafkaOperationsMetrics metrics() {
+        MeterRegistry meterRegistry = meterRegistryProvider.getIfAvailable();
         if (meterRegistry == null) {
             return KafkaOperationsMetrics.empty();
         }
@@ -86,6 +80,7 @@ public class KafkaOperationsService {
     }
 
     private double sumCounters(String name) {
+        MeterRegistry meterRegistry = meterRegistryProvider.getIfAvailable();
         if (meterRegistry == null) {
             return 0.0;
         }

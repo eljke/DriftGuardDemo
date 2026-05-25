@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 /**
- * English demo documentation.
+ * Links to local tools displayed by the demo UI.
  */
 @Getter
 @Setter
@@ -14,17 +14,17 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "demo.tools")
 public class DemoToolProperties {
     /**
-     * English demo documentation.
+     * Kafka UI URL for inspecting demo topics.
      */
     private String kafkaUiUrl = "http://localhost:8090";
 
     /**
-     * English demo documentation.
+     * Prometheus URL for querying demo metrics.
      */
     private String prometheusUrl = "http://localhost:9090";
 
     /**
-     * English demo documentation.
+     * Grafana URL for detector dashboards.
      */
     private String grafanaUrl = "http://localhost:3000";
 

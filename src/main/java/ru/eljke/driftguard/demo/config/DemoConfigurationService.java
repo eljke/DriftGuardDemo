@@ -1,5 +1,6 @@
 package ru.eljke.driftguard.demo.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.eljke.driftguard.algorithms.ks.KsConfig;
 import ru.eljke.driftguard.algorithms.pagehinkley.PageHinkleyConfig;
@@ -12,26 +13,15 @@ import ru.eljke.driftguard.spring.DriftGuardProperties;
 import java.util.List;
 
 /**
- * English demo documentation.
+ * Builds the configuration view shown in the demo UI.
  */
 @Service
+@RequiredArgsConstructor
 public class DemoConfigurationService {
     private final DemoKafkaProperties demoKafkaProperties;
     private final DriftGuardProperties driftGuardProperties;
     private final DemoDetectionRuntime runtime;
     private final DetectorRegistry detectorRegistry;
-
-    public DemoConfigurationService(
-            DemoKafkaProperties demoKafkaProperties,
-            DriftGuardProperties driftGuardProperties,
-            DemoDetectionRuntime runtime,
-            DetectorRegistry detectorRegistry
-    ) {
-        this.demoKafkaProperties = demoKafkaProperties;
-        this.driftGuardProperties = driftGuardProperties;
-        this.runtime = runtime;
-        this.detectorRegistry = detectorRegistry;
-    }
 
     public DemoConfigurationView current() {
         List<DemoConfigurationView.DetectorConfigurationView> detectors = runtime.definitions().stream()
@@ -101,18 +91,18 @@ public class DemoConfigurationService {
         if (runtime.profile() == DemoDetectorProfile.AGGRESSIVE) {
             return new DemoConfigurationView.AggressivenessView(
                     "Aggressive",
-                    "English demo text."
+                    "Emits alerts faster by using lower thresholds and shorter cooldowns."
             );
         }
         if (runtime.profile() == DemoDetectorProfile.CONSERVATIVE) {
             return new DemoConfigurationView.AggressivenessView(
                     "Conservative",
-                    "English demo text."
+                    "Requires stronger and more persistent evidence before emitting alerts."
             );
         }
         return new DemoConfigurationView.AggressivenessView(
                 "Balanced",
-                "English demo text."
+                "Balances detection latency and false-positive control for the demo scenarios."
         );
     }
 

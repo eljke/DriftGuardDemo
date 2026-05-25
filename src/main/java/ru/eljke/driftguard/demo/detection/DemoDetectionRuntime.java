@@ -17,8 +17,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * English demo documentation.
- * English demo documentation.
+ * Owns the active DriftGuard facade and detector definitions for demo scenarios.
+ *
+ * <p>The runtime can switch between predefined detector profiles without
+ * restarting the application.</p>
  */
 @Service
 public class DemoDetectionRuntime {

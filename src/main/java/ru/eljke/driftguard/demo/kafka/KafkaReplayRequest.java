@@ -3,13 +3,13 @@ package ru.eljke.driftguard.demo.kafka;
 import ru.eljke.driftguard.demo.scenario.DemoScenarioRequest;
 
 /**
- * English demo documentation.
+ * Request body for replaying a synthetic scenario through Kafka.
  *
- * @param scenario documented value
- * @param speed documented value
- * @param resetState documented value
- * @param profile documented value
- * @param samples documented value
+ * @param scenario scenario id to replay
+ * @param speed playback speed multiplier
+ * @param resetState whether detector state should be reset before replay
+ * @param profile optional detector profile to activate
+ * @param samples optional number of generated metric samples
  * @param baselineValue stable value before drift
  * @param driftValue value during step/drop/spike drift
  * @param noiseStdDev noise standard deviation
