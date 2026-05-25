@@ -1,15 +1,17 @@
 # DriftGuard Demo
 
-DriftGuard Demo is a standalone Spring Boot observability demo that consumes the DriftGuard library. It simulates service metrics, runs drift detection, stores recent drift events and exposes a React UI plus REST/OpenAPI endpoints.
+DriftGuard Demo is a standalone Spring Boot observability product that consumes the DriftGuard library. It simulates service metrics, runs drift detection, stores recent drift events and exposes a React UI plus REST/OpenAPI endpoints.
 
-Before building this project from a local checkout, install the DriftGuard library artifacts:
+## Prerequisite
+
+Install the local DriftGuard library artifacts first:
 
 ```bash
 cd ../DriftGuard
 ./mvnw install
 ```
 
-Then run the demo:
+## Run Locally
 
 ```bash
 cd ../DriftGuardDemo
@@ -17,3 +19,28 @@ cd ../DriftGuardDemo
 ```
 
 The UI is available at `http://localhost:8080`.
+
+## Full Stack
+
+```bash
+./mvnw package
+docker compose up --build
+```
+
+Services:
+
+- Demo UI: `http://localhost:8080`
+- Kafka: `localhost:9092`
+- Kafka UI: `http://localhost:8090`
+- Prometheus: `http://localhost:9090`
+- Grafana: `http://localhost:3000` (`admin` / `admin`)
+
+## Frontend Development
+
+```bash
+cd src/main/frontend
+npm ci
+npm run dev
+```
+
+Vite proxies `/api`, `/actuator`, `/v3` and Swagger requests to `localhost:8080`.
