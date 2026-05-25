@@ -7,6 +7,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -34,5 +35,12 @@ class OpenApiEndpointTest {
                 .andExpect(jsonPath("$.components.schemas.DemoConfigurationView.properties.aggressiveness.description").exists())
                 .andExpect(jsonPath("$.components.schemas.DetectorConfigurationView.properties.sensitivity.description").exists())
                 .andExpect(jsonPath("$.components.schemas.ToolLink.properties.url.description").exists());
+    }
+
+    @Test
+    void switchesCheckoutServiceMode() throws Exception {
+        mockMvc.perform(post("/api/service/mode/DEGRADED"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.mode").value("DEGRADED"));
     }
 }

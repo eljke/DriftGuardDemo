@@ -54,7 +54,7 @@ public class CheckoutServiceController {
 
     @PostMapping("/mode/{mode}")
     @Operation(summary = "Switch checkout service behavior mode")
-    public CheckoutServiceSnapshot mode(@PathVariable CheckoutMode mode) {
+    public CheckoutServiceSnapshot mode(@PathVariable("mode") CheckoutMode mode) {
         return checkoutService.setMode(mode);
     }
 }

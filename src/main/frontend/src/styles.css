@@ -1418,6 +1418,25 @@ th {
     overflow: hidden;
 }
 
+.service-page .operations-log {
+    max-height: min(430px, 58vh);
+    overflow: auto;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overscroll-behavior: contain;
+}
+
+.service-page .operations-log table {
+    margin: 0;
+}
+
+.service-page .operations-log th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    box-shadow: 0 1px 0 var(--line);
+}
+
 .service-control-row {
     display: flex;
     align-items: flex-start;

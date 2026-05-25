@@ -85,32 +85,36 @@ export function ServicePage({ service, operations }: { service?: CheckoutService
       </Panel>
 
       <Panel title={t("service.recentOperations")}>
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>{t("events.time")}</th>
-                <th>{t("service.operation")}</th>
-                <th>{t("service.customer")}</th>
-                <th>{t("service.result")}</th>
-                <th>{t("service.latency")}</th>
-                <th>{t("service.queue")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(service?.recentOperations ?? []).slice().reverse().map((operation) => (
-                <tr key={operation.id}>
-                  <td>{new Date(operation.occurredAt).toLocaleTimeString()}</td>
-                  <td>{operation.operation}</td>
-                  <td>{operation.customerId}</td>
-                  <td><span className={operation.success ? "phase recovered" : "phase started"}>{operation.success ? "OK" : "FAILED"}</span></td>
-                  <td>{Math.round(operation.latencyMillis)} ms</td>
-                  <td>{Math.round(operation.queueSize)}</td>
+        {(service?.recentOperations.length ?? 0) === 0 ? (
+          <div className="empty-state compact">{t("service.noOperations")}</div>
+        ) : (
+          <div className="table-wrap operations-log" role="region" aria-label={t("service.recentOperations")} tabIndex={0}>
+            <table>
+              <thead>
+                <tr>
+                  <th>{t("events.time")}</th>
+                  <th>{t("service.operation")}</th>
+                  <th>{t("service.customer")}</th>
+                  <th>{t("service.result")}</th>
+                  <th>{t("service.latency")}</th>
+                  <th>{t("service.queue")}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {(service?.recentOperations ?? []).slice().reverse().map((operation) => (
+                  <tr key={operation.id}>
+                    <td>{new Date(operation.occurredAt).toLocaleTimeString()}</td>
+                    <td>{operation.operation}</td>
+                    <td>{operation.customerId}</td>
+                    <td><span className={operation.success ? "phase recovered" : "phase started"}>{operation.success ? "OK" : "FAILED"}</span></td>
+                    <td>{Math.round(operation.latencyMillis)} ms</td>
+                    <td>{Math.round(operation.queueSize)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Panel>
 
       <EventsTable events={service?.recentAlerts ?? []} />
