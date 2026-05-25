@@ -43,4 +43,12 @@ class OpenApiEndpointTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.mode").value("DEGRADED"));
     }
+
+    @Test
+    void resetsCheckoutServiceHistory() throws Exception {
+        mockMvc.perform(post("/api/service/history/reset"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.operations").value(0))
+                .andExpect(jsonPath("$.recentMetrics").isEmpty());
+    }
 }

@@ -50,6 +50,14 @@ public class InMemoryDemoDriftEventRepository implements DemoDriftEventRepositor
         events.clear();
     }
 
+    @Override
+    public void clearSource(String source) {
+        if (source == null || source.isBlank()) {
+            return;
+        }
+        events.removeIf(event -> source.equals(event.source()));
+    }
+
     private void trim() {
         int overflow = events.size() - MAX_EVENTS;
         if (overflow <= 0) {

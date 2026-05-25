@@ -26,6 +26,8 @@ public interface DemoDriftEventRepository {
     List<DriftEvent> recentEvents(int limit);
 
     void clear();
+
+    void clearSource(String source);
 }
 
 

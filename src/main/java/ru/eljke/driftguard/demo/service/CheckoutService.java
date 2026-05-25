@@ -61,11 +61,11 @@ public class CheckoutService {
     private final List<MetricPoint> recentMetrics = new CopyOnWriteArrayList<>();
     private volatile ScheduledFuture<?> trafficTask;
     private volatile CheckoutMode mode = CheckoutMode.NORMAL;
-    private volatile double queueSize = 12.0;
-    private volatile long successes;
-    private volatile long failures;
+    private double queueSize = 12.0;
+    private long successes;
+    private long failures;
 
-    public CheckoutServiceSnapshot snapshot() {
+    public synchronized CheckoutServiceSnapshot snapshot() {
         List<CheckoutOperationResult> operations = latest(recentOperations, 40);
         List<MetricPoint> metrics = List.copyOf(recentMetrics);
         List<DriftEvent> alerts = eventRepository.recent(SERVICE_EVENT_LIMIT).stream()
@@ -89,7 +89,7 @@ public class CheckoutService {
         );
     }
 
-    public CheckoutOperationResult execute(CheckoutOperationRequest request) {
+    public synchronized CheckoutOperationResult execute(CheckoutOperationRequest request) {
         CheckoutOperationRequest safeRequest = request == null ? new CheckoutOperationRequest(null, null) : request;
         String operation = normalizeOperation(safeRequest.normalizedOperation());
         Instant now = Instant.now();
@@ -154,6 +154,18 @@ public class CheckoutService {
 
     public CheckoutServiceSnapshot setMode(CheckoutMode mode) {
         this.mode = mode == null ? CheckoutMode.NORMAL : mode;
+        return snapshot();
+    }
+
+    public synchronized CheckoutServiceSnapshot resetHistory() {
+        detectionRuntime.reset();
+        eventRepository.clearSource("service");
+        recentOperations.clear();
+        recentMetrics.clear();
+        sequence.set(0L);
+        successes = 0L;
+        failures = 0L;
+        queueSize = 12.0;
         return snapshot();
     }
 

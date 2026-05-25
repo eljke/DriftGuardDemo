@@ -48,6 +48,21 @@ class CheckoutServiceTest {
         assertEquals(240, service.snapshot().recentMetrics().size());
     }
 
+    @Test
+    void resetHistoryStartsANewObservationSession() {
+        CheckoutService service = newService();
+        service.execute(new CheckoutOperationRequest("create-order", "customer-1"));
+
+        var snapshot = service.resetHistory();
+
+        assertEquals(0, snapshot.operations());
+        assertEquals(0, snapshot.successes());
+        assertEquals(0, snapshot.failures());
+        assertTrue(snapshot.recentOperations().isEmpty());
+        assertTrue(snapshot.recentMetrics().isEmpty());
+        assertTrue(snapshot.recentAlerts().isEmpty());
+    }
+
     private static CheckoutService newService() {
         return new CheckoutService(
                 new DemoDetectionRuntime(),

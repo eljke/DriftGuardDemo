@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, CheckCircle2, Play, Send, Square, Zap } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Play, RotateCcw, Send, Square, Zap } from "lucide-react";
 import type { ReactNode } from "react";
 import { api } from "../api/client";
 import { EventsTable } from "../features/events/EventsTable";
@@ -19,8 +19,9 @@ export function ServicePage({ service, operations }: { service?: CheckoutService
   });
   const start = useMutation({ mutationFn: api.startServiceTraffic, onSuccess: refresh });
   const stop = useMutation({ mutationFn: api.stopServiceTraffic, onSuccess: refresh });
+  const reset = useMutation({ mutationFn: api.resetServiceHistory, onSuccess: refresh });
   const mode = useMutation({ mutationFn: api.setServiceMode, onSuccess: refresh });
-  const error = execute.error ?? start.error ?? stop.error ?? mode.error;
+  const error = execute.error ?? start.error ?? stop.error ?? reset.error ?? mode.error;
 
   return (
     <section className="stack service-page">
@@ -40,6 +41,10 @@ export function ServicePage({ service, operations }: { service?: CheckoutService
             <button className="secondary-button" disabled={stop.isPending || !service?.running} onClick={() => stop.mutate()} type="button">
               <Square size={16} />
               {t("service.stop")}
+            </button>
+            <button className="secondary-button" disabled={reset.isPending || (service?.operations ?? 0) === 0} onClick={() => reset.mutate()} type="button">
+              <RotateCcw size={16} />
+              {t("service.reset")}
             </button>
           </div>
         </div>

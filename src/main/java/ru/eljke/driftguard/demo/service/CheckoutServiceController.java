@@ -52,6 +52,12 @@ public class CheckoutServiceController {
         return checkoutService.stopTraffic();
     }
 
+    @PostMapping("/history/reset")
+    @Operation(summary = "Reset checkout service observation history")
+    public CheckoutServiceSnapshot resetHistory() {
+        return checkoutService.resetHistory();
+    }
+
     @PostMapping("/mode/{mode}")
     @Operation(summary = "Switch checkout service behavior mode")
     public CheckoutServiceSnapshot mode(@PathVariable("mode") CheckoutMode mode) {

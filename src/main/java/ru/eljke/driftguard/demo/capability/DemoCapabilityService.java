@@ -35,7 +35,7 @@ public class DemoCapabilityService {
                                 "Runtime degradation mode",
                                 "Switch the service between normal, degraded and outage behavior to show alerts without synthetic scenario screens.",
                                 "service",
-                                List.of("POST /api/service/mode/{mode}", "POST /api/service/traffic/start"),
+                                List.of("POST /api/service/mode/{mode}", "POST /api/service/traffic/start", "POST /api/service/history/reset"),
                                 List.of("Checkout Service")
                         ),
                         ready(

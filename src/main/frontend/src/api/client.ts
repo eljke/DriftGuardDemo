@@ -63,6 +63,7 @@ export const api = {
     }),
     startServiceTraffic: () => request<CheckoutServiceSnapshot>("/api/service/traffic/start", {method: "POST"}),
     stopServiceTraffic: () => request<CheckoutServiceSnapshot>("/api/service/traffic/stop", {method: "POST"}),
+    resetServiceHistory: () => request<CheckoutServiceSnapshot>("/api/service/history/reset", {method: "POST"}),
     setServiceMode: (mode: CheckoutMode) => request<CheckoutServiceSnapshot>(`/api/service/mode/${mode}`, {method: "POST"}),
     overview: () => request<DemoRunResult>("/api/demo"),
     events: () => request<DriftEvent[]>("/api/demo/events"),

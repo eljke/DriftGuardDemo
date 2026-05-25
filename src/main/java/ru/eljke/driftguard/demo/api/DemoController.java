@@ -203,6 +203,7 @@ public class DemoController {
                 Map.entry("executeServiceOperation", "POST /api/service/operations"),
                 Map.entry("startServiceTraffic", "POST /api/service/traffic/start"),
                 Map.entry("stopServiceTraffic", "POST /api/service/traffic/stop"),
+                Map.entry("resetServiceHistory", "POST /api/service/history/reset"),
                 Map.entry("setServiceMode", "POST /api/service/mode/{mode}"),
                 Map.entry("overview", "GET /api/demo"),
                 Map.entry("events", "GET /api/demo/events"),
