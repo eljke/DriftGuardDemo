@@ -12,6 +12,7 @@ import ru.eljke.driftguard.core.domain.MetricKind;
 import ru.eljke.driftguard.core.domain.MetricPoint;
 import ru.eljke.driftguard.demo.detection.DemoDetectionRuntime;
 import ru.eljke.driftguard.demo.event.DemoDriftEventRepository;
+import ru.eljke.driftguard.demo.event.DemoStoredDriftEvent;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -41,7 +42,8 @@ public class CheckoutService {
             "reserve-inventory",
             "dispatch-order"
     );
-    private static final int HISTORY_LIMIT = 220;
+    private static final int OPERATION_HISTORY_LIMIT = 220;
+    private static final int SERVICE_EVENT_LIMIT = 2000;
 
     private final DemoDetectionRuntime detectionRuntime;
     private final DemoDriftEventRepository eventRepository;
@@ -65,10 +67,10 @@ public class CheckoutService {
 
     public CheckoutServiceSnapshot snapshot() {
         List<CheckoutOperationResult> operations = latest(recentOperations, 40);
-        List<MetricPoint> metrics = latest(recentMetrics, 160);
-        List<DriftEvent> alerts = eventRepository.recent(80).stream()
+        List<MetricPoint> metrics = List.copyOf(recentMetrics);
+        List<DriftEvent> alerts = eventRepository.recent(SERVICE_EVENT_LIMIT).stream()
                 .filter(stored -> "service".equals(stored.source()))
-                .map(stored -> stored.event())
+                .map(DemoStoredDriftEvent::event)
                 .toList();
         long total = successes + failures;
         return new CheckoutServiceSnapshot(
@@ -110,7 +112,6 @@ public class CheckoutService {
             alerts.addAll(detected);
             eventRepository.appendAll("service", "checkout-service", detected);
         });
-        trim(recentMetrics);
 
         CheckoutOperationResult result = new CheckoutOperationResult(
                 sequence.incrementAndGet(),
@@ -124,7 +125,7 @@ public class CheckoutService {
                 List.copyOf(alerts)
         );
         recentOperations.add(result);
-        trim(recentOperations);
+        trim(recentOperations, OPERATION_HISTORY_LIMIT);
         recordMicrometer(result);
         return result;
     }
@@ -281,8 +282,8 @@ public class CheckoutService {
         return List.copyOf(source.subList(from, source.size()));
     }
 
-    private static void trim(List<?> source) {
-        int overflow = source.size() - HISTORY_LIMIT;
+    private static void trim(List<?> source, int limit) {
+        int overflow = source.size() - limit;
         for (int index = 0; index < overflow; index++) {
             source.remove(0);
         }

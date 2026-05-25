@@ -37,6 +37,17 @@ class CheckoutServiceTest {
         assertTrue(snapshot.meanLatencyMillis() > 0.0);
     }
 
+    @Test
+    void metricHistoryCoversTheCurrentServiceSession() {
+        CheckoutService service = newService();
+
+        for (int index = 0; index < 60; index++) {
+            service.execute(new CheckoutOperationRequest("create-order", "customer-" + index));
+        }
+
+        assertEquals(240, service.snapshot().recentMetrics().size());
+    }
+
     private static CheckoutService newService() {
         return new CheckoutService(
                 new DemoDetectionRuntime(),

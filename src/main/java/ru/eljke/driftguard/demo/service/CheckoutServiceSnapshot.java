@@ -18,7 +18,7 @@ import java.util.List;
  * @param queueSize current backlog size
  * @param throughputPerMinute recent throughput estimate
  * @param recentOperations latest business operation results
- * @param recentMetrics latest metric points sent to DriftGuard
+ * @param recentMetrics metric points retained for the current service session
  * @param recentAlerts recent DriftGuard alerts emitted by the service
  */
 public record CheckoutServiceSnapshot(
