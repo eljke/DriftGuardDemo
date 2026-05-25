@@ -23,11 +23,11 @@ export default function App() {
       <ApiStatusBanner
         items={[
           { label: t("nav.service"), error: service.error, retry: () => service.refetch() },
+          { label: t("nav.kafka"), error: kafka.error, retry: () => kafka.refetch() },
+          { label: t("kafka.operations"), error: kafkaOperations.error, retry: () => kafkaOperations.refetch() },
           ...(showLab ? [
             { label: t("nav.overview"), error: overview.error, retry: () => overview.refetch() },
-            { label: t("synthetic.title"), error: scenarios.error, retry: () => scenarios.refetch() },
-            { label: t("status.kafka"), error: kafka.error, retry: () => kafka.refetch() },
-            { label: t("kafka.operations"), error: kafkaOperations.error, retry: () => kafkaOperations.refetch() }
+            { label: t("synthetic.title"), error: scenarios.error, retry: () => scenarios.refetch() }
           ] : []),
           { label: t("nav.configuration"), error: configuration.error, retry: () => configuration.refetch() },
           { label: t("overview.recentStored"), error: storedEvents.error, retry: () => storedEvents.refetch() },

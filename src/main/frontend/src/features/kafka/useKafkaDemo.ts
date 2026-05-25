@@ -34,7 +34,7 @@ export function useKafkaDemo() {
 
   const replayScenario = (scenario: string) => {
     const request: KafkaReplayRequest = {
-      scenario,
+      scenario: scenario || "microservices-system",
       speed: replaySpeed,
       resetState,
       profile: replayProfile || undefined,
@@ -44,7 +44,7 @@ export function useKafkaDemo() {
   };
 
   const startScenario = (scenario: string) => {
-    start.mutate({ scenario, request: compactScenarioRequest(scenarioParams) });
+    start.mutate({ scenario: scenario || "microservices-system", request: compactScenarioRequest(scenarioParams) });
   };
 
   return {

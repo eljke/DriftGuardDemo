@@ -22,7 +22,13 @@ export function KafkaPage({
 }) {
   const { t } = useI18n();
   const kafkaDemo = useKafkaDemo();
-  const kafkaScenarios = scenarios.filter((scenario) => scenario.id !== "seasonal-latency");
+  const kafkaScenarios = scenarios.filter((scenario) => scenario.id === "microservices-system");
+  const serviceScenarios = kafkaScenarios.length > 0 ? kafkaScenarios : [{
+    id: "microservices-system",
+    title: t("kafka.defaultScenario"),
+    metric: "mixed",
+    description: t("kafka.defaultScenarioHelp")
+  }];
   const profiles = configuration?.availableProfiles ?? [];
 
   return (
@@ -36,7 +42,7 @@ export function KafkaPage({
         replaySpeed={kafkaDemo.replaySpeed}
         resetState={kafkaDemo.resetState}
         scenarioParams={kafkaDemo.scenarioParams}
-        scenarios={kafkaScenarios}
+        scenarios={serviceScenarios}
         status={status}
         stopping={kafkaDemo.stopping}
         onProfileChange={kafkaDemo.setReplayProfile}

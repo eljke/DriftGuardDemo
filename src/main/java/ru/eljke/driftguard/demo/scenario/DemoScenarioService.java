@@ -50,7 +50,7 @@ public class DemoScenarioService {
             new DemoScenarioDescriptor("throughput-drop", "Throughput drop", "throughput", "Service throughput degradation."),
             new DemoScenarioDescriptor("queue-growth", "Queue backlog growth", "queue-size", "Gradual queue backlog growth."),
             new DemoScenarioDescriptor("seasonal-latency", "Seasonal latency", "latency", "Regular seasonality without expected drift."),
-            new DemoScenarioDescriptor("microservices-system", "Microservices system", "mixed", "Several services publish latency, error rate and queue size at the same time.")
+            new DemoScenarioDescriptor("microservices-system", "Order event stream", "mixed", "Order-domain services publish latency, error-rate, throughput and queue-size metrics through Kafka.")
     );
 
     private final DemoDetectionRuntime runtime;

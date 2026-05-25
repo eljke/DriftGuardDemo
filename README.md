@@ -1,6 +1,9 @@
 # DriftGuard Demo
 
-DriftGuard Demo is a standalone Spring Boot checkout service that consumes the DriftGuard library. The default UI runs real demo operations, publishes operational metrics, lets DriftGuard detect drift and stores recent alert events.
+DriftGuard Demo is a standalone Spring Boot application that consumes the DriftGuard library in two production-like integration styles:
+
+- `Checkout Service`: a direct embedded integration where business operations publish `MetricPoint` values to DriftGuard in-process.
+- `Kafka Service`: a stream-processing integration where service producers publish `MetricPoint` messages to Kafka and a Kafka Streams topology emits `DriftEvent` alerts.
 
 ## Prerequisite
 
@@ -20,7 +23,9 @@ cd ../DriftGuardDemo
 
 The UI is available at `http://localhost:8080`.
 
-Synthetic and Kafka lab screens are still available for algorithm demonstrations, but they are hidden by default. Enable them with `?lab=1` or by setting `localStorage.driftguard.showLab = "true"` in the browser.
+`Checkout Service` works with only the Spring Boot app. `Kafka Service` needs a reachable Kafka broker; use the full Docker stack below for the complete two-scenario demo.
+
+Synthetic and overview lab screens are still available for algorithm demonstrations, but they are hidden by default. Enable them with `?lab=1` or by setting `localStorage.driftguard.showLab = "true"` in the browser.
 
 ## Full Stack
 
