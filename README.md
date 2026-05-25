@@ -23,9 +23,11 @@ The UI is available at `http://localhost:8080`.
 ## Full Stack
 
 ```bash
-./mvnw package
 docker compose up --build
 ```
+
+The Docker build uses the sibling `../DriftGuard` checkout as a BuildKit context,
+installs the library inside the Maven build stage and then packages this demo app.
 
 Services:
 

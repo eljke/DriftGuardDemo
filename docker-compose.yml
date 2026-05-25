@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      additional_contexts:
+        driftguard-src: ../DriftGuard
     container_name: driftguard-demo
     depends_on:
       - kafka
