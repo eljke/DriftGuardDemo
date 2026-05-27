@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle2, Play, RotateCcw, Send, Square, Zap } from "lucide-react";
 import type { ReactNode } from "react";
 import { api } from "../api/client";
+import { CriticalAlertToast } from "../features/alerts/CriticalAlertToast";
 import { EventsTable } from "../features/events/EventsTable";
 import { ServiceMetricsPanel } from "../features/service/ServiceMetricsPanel";
 import { useI18n } from "../i18n";
@@ -25,6 +26,7 @@ export function ServicePage({ service, operations }: { service?: CheckoutService
 
   return (
     <section className="stack service-page">
+      <CriticalAlertToast events={service?.recentAlerts ?? []} />
       <Panel className="service-hero" title={t("service.title")}>
         {error && <Notice tone="error" text={readableError(error)} />}
         <div className="service-control-row">
@@ -51,7 +53,7 @@ export function ServicePage({ service, operations }: { service?: CheckoutService
         <div className="mode-switch">
           {(["NORMAL", "DEGRADED", "OUTAGE"] as CheckoutMode[]).map((value) => (
             <button className={service?.mode === value ? "active" : ""} disabled={mode.isPending} key={value} onClick={() => mode.mutate(value)} type="button">
-              {value}
+              {t(`mode.${value}`)}
             </button>
           ))}
         </div>

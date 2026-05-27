@@ -459,15 +459,42 @@ h2 {
     align-items: flex-start;
 }
 
+.collapsible-head {
+    width: 100%;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.section-title {
+    display: inline-flex;
+    min-width: 0;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.section-title svg {
+    margin-top: 1px;
+    color: var(--muted);
+}
+
 .section-head strong,
 .section-head span {
     display: block;
 }
 
-.section-head span {
+.section-head span,
+.section-head small {
     margin-top: 4px;
     color: var(--muted);
     font-size: 13px;
+}
+
+.section-head small {
+    display: block;
 }
 
 .metric-streams {
@@ -521,6 +548,61 @@ h2 {
     color: var(--text);
     font-size: 14px;
     font-weight: 800;
+}
+
+.critical-toast {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 50;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 12px;
+    width: min(440px, calc(100vw - 32px));
+    padding: 14px;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    color: #7f1d1d;
+    background: #fff1f2;
+    box-shadow: var(--shadow);
+}
+
+.critical-toast > svg {
+    margin-top: 2px;
+    color: var(--danger);
+}
+
+.critical-toast strong,
+.critical-toast p,
+.critical-toast small {
+    display: block;
+}
+
+.critical-toast p {
+    margin: 4px 0;
+    color: #991b1b;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.critical-toast small {
+    color: #7f1d1d;
+    line-height: 1.35;
+}
+
+.critical-toast button {
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    color: #991b1b;
+    background: transparent;
+}
+
+.critical-toast button:hover {
+    background: #ffe4e6;
 }
 
 .stream-head,

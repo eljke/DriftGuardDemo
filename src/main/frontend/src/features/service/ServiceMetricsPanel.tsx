@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
+import { useMemo, useState } from "react";
 import { TimeSeriesChart } from "../../components/TimeSeriesChart";
 import { useI18n } from "../../i18n";
 import { groupStreams, streamId } from "../../lib/drift";
@@ -16,6 +17,7 @@ export function ServiceMetricsPanel({ points, events, operations, running }: Ser
   const { t } = useI18n();
   const metricGroups = useMemo(() => groupByMetric(points), [points]);
   const operationGroups = useMemo(() => groupByOperation(operations), [operations]);
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set());
 
   if (points.length === 0) {
     return <div className="empty-state">{t("stream.empty")}</div>;
@@ -24,38 +26,51 @@ export function ServiceMetricsPanel({ points, events, operations, running }: Ser
   return (
     <div className="service-observability">
       <section className="metric-sections" aria-label={t("service.byMetric")}>
-        {metricGroups.map((group) => (
-          <article className="metric-section" key={group.metric}>
-            <div className="section-head">
-              <div>
-                <strong>{metricLabel(group.metric)}</strong>
-                <span>{t("service.metricPointCount", { points: group.points })}</span>
-              </div>
-              <span className="badge">{group.streams.length}</span>
-            </div>
-            <div className="metric-streams">
-              {group.streams.map((stream) => {
-                const streamEvents = events.filter((event) => streamId(event.key) === stream.id);
-                const latest = stream.points.at(-1);
-                return (
-                  <article className="stream-card compact-stream" key={stream.id}>
-                    <div className="stream-head">
-                      <div>
-                        <strong>{stream.operation || "-"}</strong>
-                        <span>{t("service.latestValue")}: {latest ? formatNumber(latest.value) : "-"}</span>
-                      </div>
-                      <span className="badge">{t("stream.badge", { points: stream.points.length, events: streamEvents.length })}</span>
-                    </div>
-                    {running && streamEvents.length === 0 && (
-                      <div className="inline-hint">{t("stream.waiting")}</div>
-                    )}
-                    <TimeSeriesChart points={stream.points} events={streamEvents} height={210} />
-                  </article>
-                );
-              })}
-            </div>
-          </article>
-        ))}
+        {metricGroups.map((group) => {
+          const isCollapsed = collapsed.has(group.metric);
+          return (
+            <article className="metric-section" key={group.metric}>
+              <button
+                className="section-head collapsible-head"
+                type="button"
+                aria-expanded={!isCollapsed}
+                onClick={() => setCollapsed((current) => toggle(current, group.metric))}
+              >
+                <span className="section-title">
+                  {isCollapsed ? <ChevronRight size={18} /> : <ChevronDown size={18} />}
+                  <span>
+                    <strong>{metricLabel(group.metric, t)}</strong>
+                    <small>{t("service.metricPointCount", { points: group.points })}</small>
+                  </span>
+                </span>
+                <span className="badge">{t("service.streamCount", { count: group.streams.length })}</span>
+              </button>
+              {!isCollapsed && (
+                <div className="metric-streams">
+                  {group.streams.map((stream) => {
+                    const streamEvents = events.filter((event) => streamId(event.key) === stream.id);
+                    const latest = stream.points.at(-1);
+                    return (
+                      <article className="stream-card compact-stream" key={stream.id}>
+                        <div className="stream-head">
+                          <div>
+                            <strong>{stream.operation || "-"}</strong>
+                            <span>{t("service.latestValue")}: {latest ? formatNumber(latest.value) : "-"}</span>
+                          </div>
+                          <span className="badge">{t("stream.badge", { points: stream.points.length, events: streamEvents.length })}</span>
+                        </div>
+                        {running && streamEvents.length === 0 && (
+                          <div className="inline-hint">{t("stream.waiting")}</div>
+                        )}
+                        <TimeSeriesChart points={stream.points} events={streamEvents} height={210} />
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </article>
+          );
+        })}
       </section>
 
       <section className="operation-breakdown" aria-label={t("service.byOperation")}>
@@ -138,9 +153,21 @@ function metricRank(metric: string) {
   return ["latency", "error-rate", "throughput", "queue-size"].indexOf(metric);
 }
 
-function metricLabel(metric: string) {
-  return metric
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+function metricLabel(metric: string, t: (key: string) => string) {
+  const key = `metric.${metric}`;
+  const translated = t(key);
+  if (translated !== key) {
+    return translated;
+  }
+  return metric.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
+}
+
+function toggle(current: Set<string>, metric: string) {
+  const next = new Set(current);
+  if (next.has(metric)) {
+    next.delete(metric);
+  } else {
+    next.add(metric);
+  }
+  return next;
 }
