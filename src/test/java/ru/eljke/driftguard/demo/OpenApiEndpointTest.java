@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -50,5 +51,25 @@ class OpenApiEndpointTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.operations").value(0))
                 .andExpect(jsonPath("$.recentMetrics").isEmpty());
+    }
+
+    @Test
+    void acceptsBuiltInWebhookAlertPayload() throws Exception {
+        mockMvc.perform(post("/internal/alerts/driftguard")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-Demo-Alert-Channel", "test")
+                        .content("""
+                                {
+                                  "id": "alert-1",
+                                  "severity": "CRITICAL",
+                                  "title": "Latency drift",
+                                  "message": "latency increased",
+                                  "service": "checkout-service",
+                                  "metric": "latency",
+                                  "operation": "POST /checkout",
+                                  "labels": {"detector": "latency-page-hinkley"}
+                                }
+                                """))
+                .andExpect(status().isAccepted());
     }
 }

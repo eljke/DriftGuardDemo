@@ -2,8 +2,8 @@ package ru.eljke.driftguard.demo.scenario;
 
 import ru.eljke.driftguard.core.domain.DriftEvent;
 import ru.eljke.driftguard.core.domain.MetricPoint;
-import ru.eljke.driftguard.testkit.DetectionMetrics;
-import ru.eljke.driftguard.testkit.DriftInterval;
+import ru.eljke.driftguard.testkit.benchmark.DetectionMetrics;
+import ru.eljke.driftguard.testkit.scenario.DriftInterval;
 
 import java.util.List;
 

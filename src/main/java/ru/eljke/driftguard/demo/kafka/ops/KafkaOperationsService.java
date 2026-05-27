@@ -8,7 +8,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 import ru.eljke.driftguard.demo.kafka.KafkaDemoService;
 import ru.eljke.driftguard.demo.kafka.KafkaDemoStatus;
-import ru.eljke.driftguard.spring.DriftGuardProperties;
+import ru.eljke.driftguard.spring.autoconfigure.DriftGuardProperties;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;

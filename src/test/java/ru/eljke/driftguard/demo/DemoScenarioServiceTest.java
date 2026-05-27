@@ -10,7 +10,7 @@ import ru.eljke.driftguard.demo.event.InMemoryDemoDriftEventRepository;
 import ru.eljke.driftguard.demo.scenario.DemoRunResult;
 import ru.eljke.driftguard.demo.scenario.DemoScenarioRequest;
 import ru.eljke.driftguard.demo.scenario.DemoScenarioService;
-import ru.eljke.driftguard.testkit.MetricScenario;
+import ru.eljke.driftguard.testkit.scenario.MetricScenario;
 
 import java.util.ArrayList;
 import java.util.List;

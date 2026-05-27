@@ -8,7 +8,7 @@ import ru.eljke.driftguard.core.config.DetectorDefinition;
 import ru.eljke.driftguard.core.detector.DetectorRegistry;
 import ru.eljke.driftguard.demo.detection.DemoDetectionRuntime;
 import ru.eljke.driftguard.demo.detection.DemoDetectorProfile;
-import ru.eljke.driftguard.spring.DriftGuardProperties;
+import ru.eljke.driftguard.spring.autoconfigure.DriftGuardProperties;
 
 import java.util.List;
 

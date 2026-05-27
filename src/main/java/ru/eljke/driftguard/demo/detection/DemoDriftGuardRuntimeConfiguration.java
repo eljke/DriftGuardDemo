@@ -5,11 +5,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import ru.eljke.driftguard.kafka.DriftGuardObjectMapper;
-import ru.eljke.driftguard.kafka.KafkaDriftGuardTopologyBuilder;
-import ru.eljke.driftguard.kafka.KafkaDriftGuardTopologyConfig;
-import ru.eljke.driftguard.spring.DriftGuardKafkaStreamsManager;
-import ru.eljke.driftguard.spring.DriftGuardProperties;
+import ru.eljke.driftguard.kafka.serde.DriftGuardObjectMapper;
+import ru.eljke.driftguard.kafka.topology.KafkaDriftGuardTopologyBuilder;
+import ru.eljke.driftguard.kafka.topology.KafkaDriftGuardTopologyConfig;
+import ru.eljke.driftguard.spring.kafka.DriftGuardKafkaStreamsManager;
+import ru.eljke.driftguard.spring.autoconfigure.DriftGuardProperties;
 
 /**
  * Wires the demo Kafka Streams runtime to the active in-memory DriftGuard configuration.

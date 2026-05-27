@@ -24,6 +24,15 @@ demo:
 
 driftguard:
   enabled: true
+  alerts:
+    enabled: true
+    logging-enabled: true
+    webhook:
+      enabled: true
+      url: http://localhost:${server.port}/internal/alerts/driftguard
+      timeout: 2s
+      headers:
+        X-Demo-Alert-Channel: driftguard-demo
   kafka:
     enabled: true
     bootstrap-servers: localhost:9092

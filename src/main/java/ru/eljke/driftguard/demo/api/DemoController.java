@@ -30,7 +30,7 @@ import ru.eljke.driftguard.demo.scenario.DemoScenarioRequest;
 import ru.eljke.driftguard.demo.scenario.DemoScenarioDescriptor;
 import ru.eljke.driftguard.demo.scenario.DemoScenarioService;
 import ru.eljke.driftguard.demo.tool.ToolLink;
-import ru.eljke.driftguard.testkit.DetectionBenchmarkReport;
+import ru.eljke.driftguard.testkit.benchmark.DetectionBenchmarkReport;
 
 import java.util.List;
 import java.util.Map;
