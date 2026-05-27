@@ -1,12 +1,13 @@
 import type { ReactNode } from "react";
 import type { Page } from "../../app/navigation";
-import type { DemoRunResult, KafkaDemoStatus } from "../../types";
+import type { DemoRunResult, DriftEvent, KafkaDemoStatus } from "../../types";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 
 export function AppShell({
   children,
   kafka,
+  notificationEvents,
   overview,
   page,
   onPageChange,
@@ -14,6 +15,7 @@ export function AppShell({
 }: {
   children: ReactNode;
   kafka?: KafkaDemoStatus;
+  notificationEvents: DriftEvent[];
   overview?: DemoRunResult;
   page: Page;
   onPageChange: (page: Page) => void;
@@ -23,7 +25,7 @@ export function AppShell({
     <div className="app-shell">
       <Sidebar page={page} onPageChange={onPageChange} showLab={showLab} />
       <main className="main">
-        <Header overview={overview} kafka={kafka} />
+        <Header events={notificationEvents} overview={overview} kafka={kafka} />
         {children}
       </main>
     </div>

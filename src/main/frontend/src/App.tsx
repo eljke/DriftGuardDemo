@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useDemoQueries } from "./app/useDemoQueries";
 import type { Page } from "./app/navigation";
 import { AppShell } from "./components/layout";
@@ -10,6 +10,7 @@ import { ServicePage } from "./pages/ServicePage";
 import { SyntheticPage } from "./pages/SyntheticPage";
 import { ToolsPage } from "./pages/ToolsPage";
 import { useI18n } from "./i18n";
+import type { DriftEvent } from "./types";
 
 export default function App() {
   const [showLab] = useState(() => new URLSearchParams(window.location.search).get("lab") === "1" || localStorage.getItem("driftguard.showLab") === "true");
@@ -17,9 +18,21 @@ export default function App() {
   const { t } = useI18n();
   const queries = useDemoQueries(showLab);
   const { capabilities, configuration, help, kafka, kafkaOperations, overview, scenarios, service, serviceOperations, storedEvents, tools } = queries;
+  const notificationEvents = useMemo(() => {
+    const byId = new Map<string, DriftEvent>();
+    for (const event of [
+      ...(service.data?.recentAlerts ?? []),
+      ...(kafka.data?.consumedEvents ?? []),
+      ...(overview.data?.events ?? []),
+      ...(storedEvents.data ?? []).map((stored) => stored.event)
+    ]) {
+      byId.set(event.id, event);
+    }
+    return [...byId.values()];
+  }, [kafka.data?.consumedEvents, overview.data?.events, service.data?.recentAlerts, storedEvents.data]);
 
   return (
-    <AppShell page={page} onPageChange={setPage} overview={overview.data} kafka={kafka.data} showLab={showLab}>
+    <AppShell page={page} onPageChange={setPage} notificationEvents={notificationEvents} overview={overview.data} kafka={kafka.data} showLab={showLab}>
       <ApiStatusBanner
         items={[
           { label: t("nav.service"), error: service.error, retry: () => service.refetch() },

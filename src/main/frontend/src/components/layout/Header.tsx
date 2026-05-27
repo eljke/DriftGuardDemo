@@ -1,8 +1,9 @@
 import { StatusPill } from "../ui";
-import type { DemoRunResult, KafkaDemoStatus } from "../../types";
+import type { DemoRunResult, DriftEvent, KafkaDemoStatus } from "../../types";
 import { useI18n } from "../../i18n";
+import { NotificationCenter } from "../../features/alerts/NotificationCenter";
 
-export function Header({ overview, kafka }: { overview?: DemoRunResult; kafka?: KafkaDemoStatus }) {
+export function Header({ events, overview, kafka }: { events: DriftEvent[]; overview?: DemoRunResult; kafka?: KafkaDemoStatus }) {
   const { locale, setLocale, t } = useI18n();
 
   return (
@@ -16,6 +17,7 @@ export function Header({ overview, kafka }: { overview?: DemoRunResult; kafka?: 
           <button className={locale === "ru" ? "active" : ""} onClick={() => setLocale("ru")} type="button">RU</button>
           <button className={locale === "en" ? "active" : ""} onClick={() => setLocale("en")} type="button">EN</button>
         </div>
+        <NotificationCenter events={events} />
         <StatusPill label={t("status.synthetic")} active={Boolean(overview?.running)} />
         <StatusPill label={t("status.kafka")} active={Boolean(kafka?.running)} />
       </div>
