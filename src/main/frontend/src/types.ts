@@ -43,6 +43,23 @@ export interface DemoStoredDriftEvent {
   event: DriftEvent;
 }
 
+export interface DemoWebhookAlertPayload {
+  id: string;
+  severity: Severity;
+  title: string;
+  message: string;
+  service: string;
+  metric: string;
+  operation?: string;
+  labels: Record<string, string>;
+}
+
+export interface DemoWebhookDelivery {
+  acceptedAt: string;
+  channel?: string;
+  payload: DemoWebhookAlertPayload;
+}
+
 export interface DetectionMetrics {
   detected: boolean;
   events: number;

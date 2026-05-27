@@ -779,7 +779,7 @@ h2 {
 
 .alert-delivery-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 12px;
 }
 
@@ -836,6 +836,48 @@ h2 {
     background: #e2e8f0;
     font-size: 12px;
     font-weight: 800;
+}
+
+.webhook-delivery-box {
+    display: grid;
+    gap: 12px;
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.webhook-delivery-box strong,
+.webhook-delivery-box small {
+    display: block;
+}
+
+.webhook-delivery-box small {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.webhook-delivery-list {
+    display: grid;
+    gap: 8px;
+}
+
+.webhook-delivery-item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface-muted);
+}
+
+.webhook-delivery-item strong {
+    color: var(--text);
+    font-size: 13px;
 }
 
 .stream-head,

@@ -13,6 +13,7 @@ export function useDemoQueries(showLab = false) {
   const capabilities = useQuery({ queryKey: ["capabilities"], queryFn: api.capabilities, enabled: showLab });
   const configuration = useQuery({ queryKey: ["configuration"], queryFn: api.configuration });
   const storedEvents = useQuery({ queryKey: ["stored-events"], queryFn: api.storedEvents, refetchInterval: 750 });
+  const webhookDeliveries = useQuery({ queryKey: ["webhook-deliveries"], queryFn: api.webhookDeliveries, refetchInterval: 750 });
 
   return {
     service,
@@ -25,6 +26,7 @@ export function useDemoQueries(showLab = false) {
     help,
     capabilities,
     configuration,
-    storedEvents
+    storedEvents,
+    webhookDeliveries
   };
 }

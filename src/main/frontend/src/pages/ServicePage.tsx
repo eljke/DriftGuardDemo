@@ -10,9 +10,9 @@ import { ServiceMetricsPanel } from "../features/service/ServiceMetricsPanel";
 import { useI18n } from "../i18n";
 import { readableError } from "../lib/format";
 import { MetricCard, Notice, Panel } from "../components/ui";
-import type { CheckoutMode, CheckoutServiceSnapshot } from "../types";
+import type { CheckoutMode, CheckoutServiceSnapshot, DemoWebhookDelivery } from "../types";
 
-export function ServicePage({ service, operations }: { service?: CheckoutServiceSnapshot; operations: string[] }) {
+export function ServicePage({ service, operations, webhookDeliveries }: { service?: CheckoutServiceSnapshot; operations: string[]; webhookDeliveries: DemoWebhookDelivery[] }) {
   const { t } = useI18n();
   const queryClient = useQueryClient();
   const refresh = (data: CheckoutServiceSnapshot) => queryClient.setQueryData(["service"], data);
@@ -89,7 +89,7 @@ export function ServicePage({ service, operations }: { service?: CheckoutService
         </div>
       </Panel>
 
-      <AlertDeliveryPanel events={service?.recentAlerts ?? []} />
+      <AlertDeliveryPanel events={service?.recentAlerts ?? []} webhookDeliveries={webhookDeliveries} />
 
       <Panel title={t("service.metrics")}>
         <ServiceMetricsPanel

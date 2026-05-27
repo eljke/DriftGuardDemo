@@ -17,7 +17,7 @@ export default function App() {
   const [page, setPage] = useState<Page>("service");
   const { t } = useI18n();
   const queries = useDemoQueries(showLab);
-  const { capabilities, configuration, help, kafka, kafkaOperations, overview, scenarios, service, serviceOperations, storedEvents, tools } = queries;
+  const { capabilities, configuration, help, kafka, kafkaOperations, overview, scenarios, service, serviceOperations, storedEvents, tools, webhookDeliveries } = queries;
   const notificationEvents = useMemo(() => {
     const byId = new Map<string, DriftEvent>();
     for (const event of [
@@ -44,11 +44,12 @@ export default function App() {
           ] : []),
           { label: t("nav.configuration"), error: configuration.error, retry: () => configuration.refetch() },
           { label: t("overview.recentStored"), error: storedEvents.error, retry: () => storedEvents.refetch() },
+          { label: t("alerts.webhookDeliveries"), error: webhookDeliveries.error, retry: () => webhookDeliveries.refetch() },
           ...(showLab ? [{ label: t("capabilities.title"), error: capabilities.error, retry: () => capabilities.refetch() }] : []),
           { label: "Help", error: help.error, retry: () => help.refetch() }
         ]}
       />
-      {page === "service" && <ServicePage service={service.data} operations={serviceOperations.data ?? []} />}
+      {page === "service" && <ServicePage service={service.data} operations={serviceOperations.data ?? []} webhookDeliveries={webhookDeliveries.data ?? []} />}
       {page === "overview" && <OverviewPage result={overview.data} kafka={kafka.data} storedEvents={storedEvents.data ?? []} capabilities={capabilities.data ?? []} />}
       {page === "synthetic" && <SyntheticPage result={overview.data} scenarios={scenarios.data ?? []} />}
       {page === "kafka" && <KafkaPage status={kafka.data} operations={kafkaOperations.data} scenarios={scenarios.data ?? []} configuration={configuration.data} />}

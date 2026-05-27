@@ -26,6 +26,7 @@ class OpenApiEndpointTest {
                 .andExpect(jsonPath("$.paths['/api/demo/run']").exists())
                 .andExpect(jsonPath("$.paths['/api/demo/kafka/start/{scenario}']").exists())
                 .andExpect(jsonPath("$.paths['/api/demo/kafka/operations']").exists())
+                .andExpect(jsonPath("$.paths['/api/demo/alerts/webhook-deliveries']").exists())
                 .andExpect(jsonPath("$.paths['/api/demo/tools']").exists())
                 .andExpect(jsonPath("$.components.schemas.DriftEvent.description").exists())
                 .andExpect(jsonPath("$.components.schemas.MetricPoint.properties.value.description").exists())
@@ -71,5 +72,10 @@ class OpenApiEndpointTest {
                                 }
                                 """))
                 .andExpect(status().isAccepted());
+
+        mockMvc.perform(get("/api/demo/alerts/webhook-deliveries"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].payload.id").value("alert-1"))
+                .andExpect(jsonPath("$[0].payload.service").value("checkout-service"));
     }
 }

@@ -1,6 +1,7 @@
 package ru.eljke.driftguard.demo.alert;
 
 import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,14 +18,18 @@ import org.springframework.web.bind.annotation.RestController;
  * local receiver so the integration is runnable without external accounts.</p>
  */
 @Slf4j
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/internal/alerts/driftguard")
 public class DemoWebhookAlertController {
+    private final DemoWebhookDeliveryRepository deliveryRepository;
+
     @PostMapping
     public ResponseEntity<Void> receive(
             @RequestHeader(value = "X-Demo-Alert-Channel", required = false) String channel,
             @RequestBody DemoWebhookAlertPayload payload
     ) {
+        deliveryRepository.append(channel, payload);
         log.warn(
                 "Demo webhook alert received channel={} severity={} service={} metric={} operation={} title={}",
                 channel,

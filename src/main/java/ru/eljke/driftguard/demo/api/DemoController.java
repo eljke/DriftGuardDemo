@@ -13,6 +13,8 @@ import ru.eljke.driftguard.core.domain.DriftEvent;
 import ru.eljke.driftguard.core.error.DriftGuardValidationException;
 import ru.eljke.driftguard.demo.capability.DemoCapabilityGroup;
 import ru.eljke.driftguard.demo.capability.DemoCapabilityService;
+import ru.eljke.driftguard.demo.alert.DemoWebhookDelivery;
+import ru.eljke.driftguard.demo.alert.DemoWebhookDeliveryRepository;
 import ru.eljke.driftguard.demo.config.DemoConfigurationService;
 import ru.eljke.driftguard.demo.config.DemoConfigurationView;
 import ru.eljke.driftguard.demo.config.DemoToolProperties;
@@ -47,6 +49,7 @@ public class DemoController {
     private final DemoToolProperties toolProperties;
     private final DemoConfigurationService configurationService;
     private final DemoDriftEventRepository eventRepository;
+    private final DemoWebhookDeliveryRepository webhookDeliveryRepository;
 
     @GetMapping
     @Operation(summary = "Return the latest synthetic scenario result")
@@ -64,6 +67,12 @@ public class DemoController {
     @Operation(summary = "Return stored drift events with source metadata")
     public List<DemoStoredDriftEvent> storedEvents() {
         return eventRepository.recent(200);
+    }
+
+    @GetMapping("/alerts/webhook-deliveries")
+    @Operation(summary = "Return recent webhook alert deliveries accepted by the demo incident router")
+    public List<DemoWebhookDelivery> webhookDeliveries() {
+        return webhookDeliveryRepository.recent(50);
     }
 
     @PostMapping("/events/clear")
