@@ -2,8 +2,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, CheckCircle2, Play, RotateCcw, Send, Square, Zap } from "lucide-react";
 import type { ReactNode } from "react";
 import { api } from "../api/client";
+import { AlertDeliveryPanel } from "../features/alerts/AlertDeliveryPanel";
 import { CriticalAlertToast } from "../features/alerts/CriticalAlertToast";
 import { EventsTable } from "../features/events/EventsTable";
+import { IncidentsPanel } from "../features/events/IncidentsPanel";
 import { ServiceMetricsPanel } from "../features/service/ServiceMetricsPanel";
 import { useI18n } from "../i18n";
 import { readableError } from "../lib/format";
@@ -87,6 +89,8 @@ export function ServicePage({ service, operations }: { service?: CheckoutService
         </div>
       </Panel>
 
+      <AlertDeliveryPanel events={service?.recentAlerts ?? []} />
+
       <Panel title={t("service.metrics")}>
         <ServiceMetricsPanel
           points={service?.recentMetrics ?? []}
@@ -128,6 +132,8 @@ export function ServicePage({ service, operations }: { service?: CheckoutService
           </div>
         )}
       </Panel>
+
+      <IncidentsPanel events={service?.recentAlerts ?? []} />
 
       <EventsTable events={service?.recentAlerts ?? []} />
     </section>

@@ -135,6 +135,12 @@ export function eventEvidence(event: DriftEvent, locale: Locale = "en"): DriftEv
     : detailNumber(event, "warningThreshold");
   const consecutiveSignals = detailNumber(event, "consecutiveSignals");
   const recoveryConsecutiveNormal = detailNumber(event, "recoveryConsecutiveNormal");
+  const count = detailNumber(event, "count");
+  const windowSize = detailNumber(event, "windowSize");
+  const meanDifference = detailNumber(event, "meanDifference");
+  const epsilon = detailNumber(event, "epsilon");
+  const scoreMultiplier = detailNumber(event, "scoreMultiplier");
+  const split = detailNumber(event, "split");
 
   return [
     { label: locale === "ru" ? "Phase" : "Phase", value: event.phase },
@@ -145,7 +151,13 @@ export function eventEvidence(event: DriftEvent, locale: Locale = "en"): DriftEv
     pValue === undefined ? undefined : { label: "p-value", value: formatNumber(pValue) },
     statistic === undefined ? undefined : { label: locale === "ru" ? "Статистика" : "Statistic", value: formatNumber(statistic) },
     consecutiveSignals === undefined ? undefined : { label: locale === "ru" ? "Сигналы" : "Signals", value: formatNumber(consecutiveSignals) },
-    recoveryConsecutiveNormal === undefined ? undefined : { label: locale === "ru" ? "Recovery normals" : "Recovery normals", value: formatNumber(recoveryConsecutiveNormal) }
+    recoveryConsecutiveNormal === undefined ? undefined : { label: locale === "ru" ? "Нормализация" : "Recovery normals", value: formatNumber(recoveryConsecutiveNormal) },
+    count === undefined ? undefined : { label: locale === "ru" ? "Наблюдений" : "Observations", value: formatNumber(count) },
+    windowSize === undefined ? undefined : { label: locale === "ru" ? "Окно" : "Window", value: formatNumber(windowSize) },
+    split === undefined ? undefined : { label: locale === "ru" ? "Разрез" : "Cut", value: formatNumber(split) },
+    meanDifference === undefined ? undefined : { label: locale === "ru" ? "Разница средних" : "Mean diff", value: formatNumber(meanDifference) },
+    epsilon === undefined ? undefined : { label: locale === "ru" ? "Граница ADWIN" : "ADWIN bound", value: formatNumber(epsilon) },
+    scoreMultiplier === undefined ? undefined : { label: locale === "ru" ? "Множитель" : "Multiplier", value: formatNumber(scoreMultiplier) }
   ].filter((item): item is DriftEventEvidence => Boolean(item));
 }
 
