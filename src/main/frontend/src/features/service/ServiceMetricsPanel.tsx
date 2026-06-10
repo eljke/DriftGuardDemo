@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { TimeSeriesChart } from "../../components/TimeSeriesChart";
 import { useI18n } from "../../i18n";
 import { groupStreams, streamId } from "../../lib/drift";
-import { formatNumber } from "../../lib/format";
+import { formatNumber, formatPercent } from "../../lib/format";
 import type { CheckoutOperationResult, DriftEvent, MetricPoint } from "../../types";
 
 interface ServiceMetricsPanelProps {
@@ -49,20 +49,28 @@ export function ServiceMetricsPanel({ points, events, operations, running }: Ser
                 <div className="metric-streams">
                   {group.streams.map((stream) => {
                     const streamEvents = events.filter((event) => streamId(event.key) === stream.id);
-                    const latest = stream.points.at(-1);
+                    const displayPoints = displayMetricPoints(group.metric, stream.points);
+                    const latest = displayPoints.at(-1);
                     return (
                       <article className="stream-card compact-stream" key={stream.id}>
                         <div className="stream-head">
                           <div>
                             <strong>{stream.operation || "-"}</strong>
-                            <span>{t("service.latestValue")}: {latest ? formatNumber(latest.value) : "-"}</span>
+                            <span>{t("service.latestValue")}: {latest ? formatMetricValue(group.metric, latest.value) : "-"}</span>
                           </div>
                           <span className="badge">{t("stream.badge", { points: stream.points.length, events: streamEvents.length })}</span>
                         </div>
+                        {streamEvents.length > 0 && <EventSummary events={streamEvents} />}
                         {running && streamEvents.length === 0 && (
                           <div className="inline-hint">{t("stream.waiting")}</div>
                         )}
-                        <TimeSeriesChart points={stream.points} events={streamEvents} height={210} />
+                        <TimeSeriesChart
+                          points={displayPoints}
+                          events={streamEvents}
+                          height={210}
+                          valueLabel={t("chart.value")}
+                          valueFormatter={(value) => formatMetricValue(group.metric, value)}
+                        />
                       </article>
                     );
                   })}
@@ -170,4 +178,37 @@ function toggle(current: Set<string>, metric: string) {
     next.add(metric);
   }
   return next;
+}
+
+function displayMetricPoints(metric: string, points: MetricPoint[]) {
+  if (metric !== "error-rate") {
+    return points;
+  }
+
+  const sorted = [...points].sort((left, right) => Date.parse(left.timestamp) - Date.parse(right.timestamp));
+  return sorted.map((point, index) => {
+    const window = sorted.slice(Math.max(0, index - 19), index + 1);
+    const rollingErrorRate = window.reduce((sum, current) => sum + current.value, 0) / window.length;
+    return { ...point, value: rollingErrorRate };
+  });
+}
+
+function formatMetricValue(metric: string, value: number) {
+  if (metric === "error-rate") {
+    return formatPercent(value);
+  }
+  return formatNumber(value);
+}
+
+function EventSummary({ events }: { events: DriftEvent[] }) {
+  const critical = events.filter((event) => event.severity === "CRITICAL").length;
+  const warning = events.filter((event) => event.severity === "WARNING").length;
+  const recovered = events.filter((event) => event.phase === "RECOVERED").length;
+  return (
+    <div className="event-summary-strip" aria-label="Drift event summary">
+      {critical > 0 && <span className="event-summary critical">CRIT {critical}</span>}
+      {warning > 0 && <span className="event-summary warning">WARN {warning}</span>}
+      {recovered > 0 && <span className="event-summary recovered">REC {recovered}</span>}
+    </div>
+  );
 }

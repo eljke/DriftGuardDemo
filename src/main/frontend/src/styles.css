@@ -904,6 +904,39 @@ h2 {
     font-size: 13px;
 }
 
+.event-summary-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: -2px 0 8px;
+}
+
+.event-summary {
+    min-height: 24px;
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0;
+}
+
+.event-summary.critical {
+    color: #991b1b;
+    background: #fee2e2;
+}
+
+.event-summary.warning {
+    color: #92400e;
+    background: #fef3c7;
+}
+
+.event-summary.recovered {
+    color: #166534;
+    background: #dcfce7;
+}
+
 .chart {
     width: 100%;
     min-height: 220px;

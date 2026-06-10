@@ -12,6 +12,8 @@ interface TimeSeriesChartProps {
   points: MetricPoint[];
   events: DriftEvent[];
   height?: number;
+  valueLabel?: string;
+  valueFormatter?: (value: number) => string;
 }
 
 const severityColor: Record<string, string> = {
@@ -20,15 +22,9 @@ const severityColor: Record<string, string> = {
   CRITICAL: "#dc2626"
 };
 
-const phaseLabel: Record<string, string> = {
-  STARTED: "START",
-  ONGOING: "ONGOING",
-  RECOVERED: "RECOVERED"
-};
-
-export function TimeSeriesChart({ points, events, height = 260 }: TimeSeriesChartProps) {
+export function TimeSeriesChart({ points, events, height = 260, valueLabel = "value", valueFormatter }: TimeSeriesChartProps) {
   const elementRef = useRef<HTMLDivElement | null>(null);
-  const option = useMemo(() => buildOption(points, events), [points, events]);
+  const option = useMemo(() => buildOption(points, events, valueLabel, valueFormatter), [points, events, valueLabel, valueFormatter]);
 
   useEffect(() => {
     if (!elementRef.current) {
@@ -47,7 +43,12 @@ export function TimeSeriesChart({ points, events, height = 260 }: TimeSeriesChar
   return <div className="chart" ref={elementRef} style={{ height }} />;
 }
 
-function buildOption(points: MetricPoint[], events: DriftEvent[]): EChartsOption {
+function buildOption(
+  points: MetricPoint[],
+  events: DriftEvent[],
+  valueLabel: string,
+  valueFormatter: ((value: number) => string) | undefined
+): EChartsOption {
   const sortedPoints = [...points].sort((left, right) => Date.parse(left.timestamp) - Date.parse(right.timestamp));
   const values = sortedPoints.map((point) => [point.timestamp, point.value]);
   const markerLabels = labeledMarkers(events);
@@ -63,7 +64,9 @@ function buildOption(points: MetricPoint[], events: DriftEvent[]): EChartsOption
       color: severityColor[event.severity] ?? "#dc2626",
       fontSize: 11,
       fontWeight: 700,
-      distance: 4
+      distance: 4,
+      width: 32,
+      overflow: "truncate" as const
     }
   }));
 
@@ -78,7 +81,13 @@ function buildOption(points: MetricPoint[], events: DriftEvent[]): EChartsOption
     },
     tooltip: {
       trigger: "axis",
-      valueFormatter: (value) => Number(value).toFixed(3)
+      valueFormatter: (value) => {
+        const numeric = Number(value);
+        if (!Number.isFinite(numeric)) {
+          return String(value);
+        }
+        return valueFormatter ? valueFormatter(numeric) : numeric.toFixed(3);
+      }
     },
     dataZoom: [
       { type: "inside", throttle: 40 },
@@ -110,7 +119,7 @@ function buildOption(points: MetricPoint[], events: DriftEvent[]): EChartsOption
     series: [
       {
         type: "line",
-        name: "value",
+        name: valueLabel,
         data: values,
         showSymbol: false,
         smooth: true,
@@ -192,11 +201,11 @@ function priority(event: DriftEvent) {
 function markerLabel(event: DriftEvent, clusterSize = 1) {
   const suffix = clusterSize > 1 ? ` +${clusterSize - 1}` : "";
   if (event.phase === "RECOVERED") {
-    return `${phaseLabel[event.phase]}${suffix}`;
+    return `R${suffix}`;
   }
-  return `${phaseLabel[event.phase] ?? event.phase} ${severityShortLabel(event.severity)}${suffix}`;
+  return `${severityShortLabel(event.severity)}${suffix}`;
 }
 
 function severityShortLabel(severity: string) {
-  return severity === "CRITICAL" ? "CRIT" : severity === "WARNING" ? "WARN" : severity;
+  return severity === "CRITICAL" ? "C" : severity === "WARNING" ? "W" : "I";
 }
