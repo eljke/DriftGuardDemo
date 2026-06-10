@@ -119,7 +119,7 @@ public class DemoDetectionRuntime {
         return DetectorDefinition.builder()
                 .name(name)
                 .config(PageHinkleyConfig.builder()
-                        .warmupSamples(20)
+                        .warmupSamples(settings.warmupSamples())
                         .delta(delta)
                         .warningThreshold(warningThreshold)
                         .criticalThreshold(criticalThreshold)
@@ -150,6 +150,7 @@ public class DemoDetectionRuntime {
             double queueCritical,
             double throughputWarning,
             double throughputCritical,
+            int warmupSamples,
             EmissionPolicyConfig emissionPolicy
     ) {
         private static ProfileSettings of(DemoDetectorProfile profile) {
@@ -159,21 +160,24 @@ public class DemoDetectionRuntime {
                         0.025, 0.09,
                         25.0, 70.0,
                         90.0, 180.0,
-                        emissionPolicy(2, Duration.ofSeconds(20))
+                        6,
+                        emissionPolicy(1, Duration.ofSeconds(8))
                 );
                 case BALANCED -> new ProfileSettings(
                         35.0, 115.0,
                         0.045, 0.14,
                         35.0, 110.0,
                         120.0, 250.0,
-                        emissionPolicy(2, Duration.ofSeconds(45))
+                        8,
+                        emissionPolicy(1, Duration.ofSeconds(12))
                 );
                 case CONSERVATIVE -> new ProfileSettings(
                         70.0, 190.0,
                         0.07, 0.20,
                         75.0, 180.0,
                         180.0, 350.0,
-                        emissionPolicy(4, Duration.ofSeconds(75))
+                        14,
+                        emissionPolicy(2, Duration.ofSeconds(25))
                 );
             };
         }

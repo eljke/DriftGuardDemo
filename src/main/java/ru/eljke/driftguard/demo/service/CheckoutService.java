@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @RequiredArgsConstructor
 public class CheckoutService {
     private static final String SERVICE = "checkout-service";
+    private static final String DETECTOR_OPERATION = "POST /checkout";
     private static final List<String> OPERATIONS = List.of(
             "create-order",
             "authorize-payment",
@@ -182,23 +183,30 @@ public class CheckoutService {
                 point("latency", operation, now, latency, MetricKind.DURATION),
                 point("error-rate", operation, now, success ? 0.0 : 1.0, MetricKind.RATE),
                 point("throughput", operation, now, throughputValue(success), MetricKind.RATE),
-                point("queue-size", "orders.created", now, queueSize, MetricKind.SIZE)
+                point("queue-size", operation, now, queueSize, MetricKind.SIZE)
         );
     }
 
-    private MetricPoint point(String metric, String operation, Instant now, double value, MetricKind kind) {
+    private MetricPoint point(String metric, String businessOperation, Instant now, double value, MetricKind kind) {
         return MetricPoint.builder()
                 .key(MetricKey.builder()
                         .service(SERVICE)
                         .metric(metric)
                         .instance("checkout-api-1")
-                        .operation(operation)
+                        .operation(DETECTOR_OPERATION)
                         .build())
                 .timestamp(now)
                 .value(value)
                 .kind(kind)
-                .tags(Map.of("mode", mode.name(), "component", "checkout"))
-                .attributes(Map.of("source", "business-operation"))
+                .tags(Map.of(
+                        "mode", mode.name(),
+                        "component", "checkout",
+                        "business-operation", businessOperation
+                ))
+                .attributes(Map.of(
+                        "source", "checkout-service",
+                        "businessOperation", businessOperation
+                ))
                 .build();
     }
 

@@ -49,52 +49,58 @@ driftguard:
       services: [checkout-service]
       metrics: [latency]
       operations: ["POST /checkout"]
-      warmup-samples: 20
+      warmup-samples: 8
       delta: 0.1
       warning-threshold: 25.0
       critical-threshold: 50.0
       alpha: 0.05
       emission-policy:
-        min-consecutive-signals: 2
-        cooldown: 10s
+        min-consecutive-signals: 1
+        cooldown: 12s
         recovery-consecutive-normal: 3
     - name: error-rate-page-hinkley
       enabled: true
       algorithm: page-hinkley
+      services: [checkout-service]
       metrics: [error-rate]
-      warmup-samples: 20
+      operations: ["POST /checkout"]
+      warmup-samples: 8
       delta: 0.001
       warning-threshold: 0.045
       critical-threshold: 0.14
       alpha: 0.05
       emission-policy:
-        min-consecutive-signals: 2
-        cooldown: 45s
+        min-consecutive-signals: 1
+        cooldown: 12s
         recovery-consecutive-normal: 3
     - name: throughput-page-hinkley
       enabled: true
       algorithm: page-hinkley
+      services: [checkout-service]
       metrics: [throughput]
-      warmup-samples: 20
+      operations: ["POST /checkout"]
+      warmup-samples: 8
       delta: 1.0
       warning-threshold: 120.0
       critical-threshold: 250.0
       alpha: 0.05
       direction: DOWN
       emission-policy:
-        min-consecutive-signals: 2
-        cooldown: 10s
+        min-consecutive-signals: 1
+        cooldown: 12s
         recovery-consecutive-normal: 3
     - name: queue-size-page-hinkley
       enabled: true
       algorithm: page-hinkley
+      services: [checkout-service]
       metrics: [queue-size]
-      warmup-samples: 20
+      operations: ["POST /checkout"]
+      warmup-samples: 8
       delta: 0.1
       warning-threshold: 25.0
       critical-threshold: 60.0
       alpha: 0.05
       emission-policy:
-        min-consecutive-signals: 2
-        cooldown: 10s
+        min-consecutive-signals: 1
+        cooldown: 12s
         recovery-consecutive-normal: 3
