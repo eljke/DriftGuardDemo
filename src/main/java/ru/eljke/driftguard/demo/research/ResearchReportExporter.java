@@ -46,6 +46,7 @@ public final class ResearchReportExporter {
                 .append("- Hold-out repetitions: ").append(report.calibration().holdoutRepetitions()).append('\n')
                 .append("- Calibration trials: ").append(report.calibration().calibrationTrials()).append('\n')
                 .append("- Training examples: ").append(report.calibration().trainingExamples()).append('\n')
+                .append("- Calibration-selected global baseline: ").append(report.calibration().bestGlobalProfile()).append('\n')
                 .append("- Samples per stream: ").append(report.request().samples()).append('\n')
                 .append("- Base seed: ").append(report.request().baseSeed()).append("\n\n")
                 .append("| Scenario | Strategy | F1 | 95% CI | Precision | Recall | FP/1000 | Delay | Detection rate | Specificity | Alarm-free | Mean time to false alarm |\n")
@@ -63,6 +64,22 @@ public final class ResearchReportExporter {
                     .append(" | ").append(percent(result.meanSpecificity()))
                     .append(" | ").append(percent(result.falseAlarmFreeRate()))
                     .append(" | ").append(decimal(result.meanTimeToFirstFalseAlarmSamples()))
+                    .append(" |\n");
+        }
+        markdown.append("\n## Paired adaptive comparison\n\n")
+                .append("| Scope | Baseline | Pairs | Mean delta | Bootstrap 95% CI | Wilcoxon p | Wins | Losses | Ties |\n")
+                .append("|---|---|---:|---:|---:|---:|---:|---:|---:|\n");
+        for (ResearchComparison comparison : report.comparisons()) {
+            markdown.append("| ").append(comparison.scope())
+                    .append(" | ").append(comparison.baselineProfile())
+                    .append(" | ").append(comparison.pairs())
+                    .append(" | ").append(decimal(comparison.meanDelta()))
+                    .append(" | ").append(decimal(comparison.confidenceLow()))
+                    .append("-").append(decimal(comparison.confidenceHigh()))
+                    .append(" | ").append(decimal(comparison.wilcoxonPValue()))
+                    .append(" | ").append(comparison.adaptiveWins())
+                    .append(" | ").append(comparison.adaptiveLosses())
+                    .append(" | ").append(comparison.ties())
                     .append(" |\n");
         }
         return markdown.toString();

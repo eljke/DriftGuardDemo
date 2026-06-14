@@ -11,6 +11,7 @@ public record ResearchExperimentReport(
         int totalTrials,
         ResearchCalibrationSummary calibration,
         List<ResearchAggregate> aggregates,
+        List<ResearchComparison> comparisons,
         List<ResearchTrial> trials
 ) {
 }

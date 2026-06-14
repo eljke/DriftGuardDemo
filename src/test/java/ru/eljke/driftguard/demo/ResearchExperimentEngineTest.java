@@ -33,6 +33,8 @@ class ResearchExperimentEngineTest {
         assertEquals(8, report.aggregates().size());
         assertEquals(6, report.calibration().calibrationTrials());
         assertEquals(2, report.calibration().trainingExamples());
+        assertEquals(3, report.comparisons().size());
+        assertEquals(2, report.comparisons().getFirst().pairs());
         assertTrue(report.aggregates().stream().allMatch(result -> result.trials() == 1));
         assertTrue(report.aggregates().stream()
                 .filter(result -> result.meanF1() != null)

@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,8 @@ public class ResearchExperimentEngine {
         ResearchExperimentRequest request = rawRequest.normalized();
         List<CalibrationExample> calibrationExamples = new ArrayList<>();
         Map<String, Integer> bestProfileLabels = new LinkedHashMap<>();
+        Map<DemoDetectorProfile, Double> calibrationUtility = new EnumMap<>(DemoDetectorProfile.class);
+        Map<DemoDetectorProfile, Integer> calibrationUtilityCounts = new EnumMap<>(DemoDetectorProfile.class);
         int calibrationTrials = 0;
         int completed = 0;
 
@@ -73,6 +76,14 @@ public class ResearchExperimentEngine {
                                         trial -> utility(trial, request.samples())
                                 ))
                                 .orElseThrow();
+                        for (ResearchTrial candidate : candidates) {
+                            calibrationUtility.merge(
+                                    candidate.selectedProfile(),
+                                    utility(candidate, request.samples()),
+                                    Double::sum
+                            );
+                            calibrationUtilityCounts.merge(candidate.selectedProfile(), 1, Integer::sum);
+                        }
                         calibrationExamples.add(new CalibrationExample(
                                 StreamCharacteristics.fromBaseline(generated.points()),
                                 best.selectedProfile()
@@ -83,6 +94,11 @@ public class ResearchExperimentEngine {
             }
         }
 
+        DemoDetectorProfile bestGlobalProfile = Arrays.stream(DemoDetectorProfile.values())
+                .max(java.util.Comparator.comparingDouble(profile ->
+                        calibrationUtility.get(profile) / calibrationUtilityCounts.get(profile)
+                ))
+                .orElseThrow();
         CalibratedProfileSelector selector = new CalibratedProfileSelector(calibrationExamples);
         List<ResearchTrial> trials = new ArrayList<>();
         for (String scenarioId : request.scenarios()) {
@@ -134,9 +150,11 @@ public class ResearchExperimentEngine {
                         calibrationTrials,
                         trials.size(),
                         calibrationExamples.size(),
+                        bestGlobalProfile,
                         Map.copyOf(bestProfileLabels)
                 ),
                 aggregate(trials),
+                comparisons(trials, bestGlobalProfile, request.samples(), request.baseSeed()),
                 List.copyOf(trials)
         );
     }
@@ -290,6 +308,69 @@ public class ResearchExperimentEngine {
         return trial.f1() - falsePositivePenalty - 0.15 * normalizedDelay;
     }
 
+    private static List<ResearchComparison> comparisons(
+            List<ResearchTrial> trials,
+            DemoDetectorProfile baselineProfile,
+            int samples,
+            long baseSeed
+    ) {
+        List<ResearchComparison> comparisons = new ArrayList<>();
+        comparisons.add(comparison("ALL", trials, baselineProfile, samples, baseSeed));
+        trials.stream()
+                .map(ResearchTrial::scenario)
+                .distinct()
+                .forEach(scenario -> comparisons.add(comparison(
+                        scenario,
+                        trials.stream().filter(trial -> trial.scenario().equals(scenario)).toList(),
+                        baselineProfile,
+                        samples,
+                        baseSeed + scenario.hashCode()
+                )));
+        return List.copyOf(comparisons);
+    }
+
+    private static ResearchComparison comparison(
+            String scope,
+            List<ResearchTrial> trials,
+            DemoDetectorProfile baselineProfile,
+            int samples,
+            long bootstrapSeed
+    ) {
+        ResearchStrategy baselineStrategy = ResearchStrategy.valueOf(baselineProfile.name());
+        Map<TrialKey, ResearchTrial> baseline = trials.stream()
+                .filter(trial -> trial.strategy() == baselineStrategy)
+                .collect(Collectors.toMap(TrialKey::from, Function.identity()));
+        List<ResearchTrial> adaptive = trials.stream()
+                .filter(trial -> trial.strategy() == ResearchStrategy.ADAPTIVE)
+                .toList();
+        double[] adaptiveUtility = adaptive.stream()
+                .mapToDouble(trial -> utility(trial, samples))
+                .toArray();
+        double[] baselineUtility = adaptive.stream()
+                .map(trial -> baseline.get(TrialKey.from(trial)))
+                .mapToDouble(trial -> utility(trial, samples))
+                .toArray();
+        double[] differences = new double[adaptive.size()];
+        for (int index = 0; index < differences.length; index++) {
+            differences[index] = adaptiveUtility[index] - baselineUtility[index];
+        }
+        PairedStatistics.Result statistics = PairedStatistics.analyze(differences, bootstrapSeed);
+        return new ResearchComparison(
+                scope,
+                baselineProfile,
+                differences.length,
+                Arrays.stream(adaptiveUtility).average().orElseThrow(),
+                Arrays.stream(baselineUtility).average().orElseThrow(),
+                statistics.mean(),
+                statistics.confidenceLow(),
+                statistics.confidenceHigh(),
+                statistics.pValue(),
+                statistics.wins(),
+                statistics.losses(),
+                statistics.ties()
+        );
+    }
+
     private static DemoScenarioRequest scenarioRequest(
             String scenarioId,
             int samples,
@@ -317,5 +398,16 @@ public class ResearchExperimentEngine {
     }
 
     private record GeneratedScenario(MetricScenario scenario, List<MetricPoint> points) {
+    }
+
+    private record TrialKey(String scenario, long seed, double noiseMultiplier, double effectMultiplier) {
+        private static TrialKey from(ResearchTrial trial) {
+            return new TrialKey(
+                    trial.scenario(),
+                    trial.seed(),
+                    trial.noiseMultiplier(),
+                    trial.effectMultiplier()
+            );
+        }
     }
 }
