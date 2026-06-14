@@ -60,24 +60,28 @@ class ResearchExperimentEngineTest {
 
     @Test
     void calibratedSelectorUsesNearestRobustBaseline() {
-        StreamCharacteristics stable = characteristics(0.02, 0.1, 0.01, 0.0, 0.0);
-        StreamCharacteristics seasonal = characteristics(0.15, 0.8, 0.12, 0.02, 0.05);
+        StreamCharacteristics errorRate = characteristics(0.01, 0.002, 0.2, 0.1, 0.12, 0.0, 0.0);
+        StreamCharacteristics latency = characteristics(100.0, 4.0, 0.04, 0.1, 0.03, 0.0, 0.0);
+        StreamCharacteristics throughput = characteristics(1_000.0, 18.0, 0.018, 0.1, 0.01, 0.0, 0.0);
         var selector = new ru.eljke.driftguard.demo.research.CalibratedProfileSelector(List.of(
                 new ru.eljke.driftguard.demo.research.CalibrationExample(
-                        stable, DemoDetectorProfile.AGGRESSIVE
+                        errorRate, DemoDetectorProfile.AGGRESSIVE
                 ),
                 new ru.eljke.driftguard.demo.research.CalibrationExample(
-                        seasonal, DemoDetectorProfile.CONSERVATIVE
+                        latency, DemoDetectorProfile.CONSERVATIVE
+                ),
+                new ru.eljke.driftguard.demo.research.CalibrationExample(
+                        throughput, DemoDetectorProfile.CONSERVATIVE
                 )
         ));
 
         assertEquals(
                 DemoDetectorProfile.AGGRESSIVE,
-                selector.select(characteristics(0.021, 0.11, 0.011, 0.0, 0.0))
+                selector.select(characteristics(0.011, 0.0021, 0.19, 0.11, 0.11, 0.0, 0.0))
         );
         assertEquals(
                 DemoDetectorProfile.CONSERVATIVE,
-                selector.select(characteristics(0.14, 0.75, 0.11, 0.02, 0.04))
+                selector.select(characteristics(950.0, 17.0, 0.018, 0.09, 0.01, 0.0, 0.0))
         );
     }
 
@@ -97,6 +101,8 @@ class ResearchExperimentEngineTest {
     }
 
     private static StreamCharacteristics characteristics(
+            double mean,
+            double standardDeviation,
             double coefficientOfVariation,
             double autocorrelation,
             double madRatio,
@@ -104,11 +110,11 @@ class ResearchExperimentEngineTest {
             double outlierRate
     ) {
         return new StreamCharacteristics(
-                100.0,
-                coefficientOfVariation * 100.0,
+                mean,
+                standardDeviation,
                 coefficientOfVariation,
                 autocorrelation,
-                100.0,
+                mean,
                 madRatio,
                 trend,
                 outlierRate

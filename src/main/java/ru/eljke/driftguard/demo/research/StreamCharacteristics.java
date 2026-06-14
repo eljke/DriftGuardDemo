@@ -47,12 +47,18 @@ public record StreamCharacteristics(
 
     public double[] featureVector() {
         return new double[] {
+                signedLogMagnitude(mean),
+                Math.log1p(standardDeviation),
                 coefficientOfVariation,
                 lagOneAutocorrelation,
                 medianAbsoluteDeviationRatio,
                 normalizedTrendSlope,
                 outlierRate
         };
+    }
+
+    private static double signedLogMagnitude(double value) {
+        return Math.copySign(Math.log1p(Math.abs(value)), value);
     }
 
     private static double lagOneAutocorrelation(List<Double> values, double mean, double variance) {
