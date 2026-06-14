@@ -226,6 +226,15 @@ public class DemoScenarioService {
     }
 
     public static MetricScenario createScenario(String scenarioId, String instance, DemoScenarioRequest request) {
+        return createScenario(scenarioId, instance, request, 42L);
+    }
+
+    public static MetricScenario createScenario(
+            String scenarioId,
+            String instance,
+            DemoScenarioRequest request,
+            long seed
+    ) {
         DemoScenarioRequest safeRequest = safeRequest(scenarioId, request);
         int safeSamples = safeRequest.normalizedSamples(defaultSamples(scenarioId));
         double driftStartPercent = safeRequest.percentOrDefault(safeRequest.driftStartPercent(), defaultDriftStartPercent(scenarioId));
@@ -233,7 +242,7 @@ public class DemoScenarioService {
         return switch (scenarioId) {
             case "latency-step" -> new StepDriftScenario(
                 "latency-step-degradation",
-                config("checkout-service", "latency", instance, "POST /checkout", MetricKind.DURATION, safeSamples),
+                config("checkout-service", "latency", instance, "POST /checkout", MetricKind.DURATION, safeSamples, seed),
                 atPercent(safeSamples, driftStartPercent),
                 safeRequest.valueOrDefault(safeRequest.baselineValue(), 100.0, 1.0, 10_000.0),
                 safeRequest.valueOrDefault(safeRequest.driftValue(), 260.0, 1.0, 10_000.0),
@@ -241,7 +250,7 @@ public class DemoScenarioService {
             );
             case "error-rate-spike" -> new PulseSpikeScenario(
                     "error-rate-spike",
-                    config("checkout-service", "error-rate", instance, "POST /checkout", MetricKind.RATE, safeSamples),
+                    config("checkout-service", "error-rate", instance, "POST /checkout", MetricKind.RATE, safeSamples, seed),
                     atPercent(safeSamples, driftStartPercent),
                     lengthPercent(safeSamples, driftStartPercent, spikeLengthPercent),
                     safeRequest.valueOrDefault(safeRequest.baselineValue(), 0.01, 0.0, 1.0),
@@ -250,7 +259,7 @@ public class DemoScenarioService {
             );
             case "throughput-drop" -> new ThroughputDropScenario(
                     "throughput-drop",
-                    config("checkout-service", "throughput", instance, "POST /checkout", MetricKind.RATE, safeSamples),
+                    config("checkout-service", "throughput", instance, "POST /checkout", MetricKind.RATE, safeSamples, seed),
                     atPercent(safeSamples, driftStartPercent),
                     safeRequest.valueOrDefault(safeRequest.baselineValue(), 1000.0, 1.0, 1_000_000.0),
                     Math.min(
@@ -261,7 +270,7 @@ public class DemoScenarioService {
             );
             case "queue-growth" -> new GradualDriftScenario(
                     "queue-backlog-growth",
-                    config("orders-worker", "queue-size", instance, "orders.created", MetricKind.SIZE, safeSamples),
+                    config("orders-worker", "queue-size", instance, "orders.created", MetricKind.SIZE, safeSamples, seed),
                     atPercent(safeSamples, driftStartPercent),
                     safeRequest.valueOrDefault(safeRequest.baselineValue(), 40.0, 0.0, 1_000_000.0),
                     safeRequest.valueOrDefault(safeRequest.driftValue(), 2.6, 0.0, 10_000.0),
@@ -269,7 +278,7 @@ public class DemoScenarioService {
             );
             case "seasonal-latency" -> new SeasonalNoiseScenario(
                     "seasonal-latency",
-                    config("checkout-service", "latency", instance, "POST /checkout", MetricKind.DURATION, safeSamples),
+                    config("checkout-service", "latency", instance, "POST /checkout", MetricKind.DURATION, safeSamples, seed),
                     safeRequest.valueOrDefault(safeRequest.baselineValue(), 120.0, 1.0, 10_000.0),
                     safeRequest.valueOrDefault(safeRequest.driftValue(), 25.0, 0.0, 10_000.0),
                     Math.max(20, at(safeSamples, 0.25)),
@@ -277,7 +286,7 @@ public class DemoScenarioService {
             );
             case "microservices-system" -> new StepDriftScenario(
                     "microservices-system-latency",
-                    config("checkout-service", "latency", instance, "POST /checkout", MetricKind.DURATION, safeSamples),
+                    config("checkout-service", "latency", instance, "POST /checkout", MetricKind.DURATION, safeSamples, seed),
                     atPercent(safeSamples, driftStartPercent),
                     safeRequest.valueOrDefault(safeRequest.baselineValue(), 100.0, 1.0, 10_000.0),
                     safeRequest.valueOrDefault(safeRequest.driftValue(), 260.0, 1.0, 10_000.0),
@@ -288,13 +297,25 @@ public class DemoScenarioService {
     }
 
     public static ScenarioConfig config(String service, String metric, String instance, String operation, MetricKind kind, int samples) {
+        return config(service, metric, instance, operation, kind, samples, 42L);
+    }
+
+    public static ScenarioConfig config(
+            String service,
+            String metric,
+            String instance,
+            String operation,
+            MetricKind kind,
+            int samples,
+            long seed
+    ) {
         return new ScenarioConfig(
                 new MetricKey(service, metric, instance, operation),
                 kind,
                 Instant.now().minusSeconds(samples),
                 Duration.ofSeconds(1),
                 samples,
-                42L
+                seed
         );
     }
 

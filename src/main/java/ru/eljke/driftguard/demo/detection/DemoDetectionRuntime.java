@@ -52,6 +52,10 @@ public class DemoDetectionRuntime {
         return profile;
     }
 
+    public static DriftGuard createGuard(DemoDetectorProfile profile) {
+        return create(profile, 0).guard();
+    }
+
     private static RuntimeState create(DemoDetectorProfile profile, long version) {
         List<DetectorDefinition> definitions = definitions(profile);
         return new RuntimeState(

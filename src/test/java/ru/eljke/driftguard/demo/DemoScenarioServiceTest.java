@@ -6,6 +6,7 @@ import ru.eljke.driftguard.core.domain.DriftEvent;
 import ru.eljke.driftguard.core.domain.DriftEventPhase;
 import ru.eljke.driftguard.core.domain.MetricPoint;
 import ru.eljke.driftguard.demo.detection.DemoDetectionRuntime;
+import ru.eljke.driftguard.demo.detection.DemoDetectorProfile;
 import ru.eljke.driftguard.demo.event.InMemoryDemoDriftEventRepository;
 import ru.eljke.driftguard.demo.scenario.DemoRunResult;
 import ru.eljke.driftguard.demo.scenario.DemoScenarioRequest;
@@ -52,6 +53,44 @@ class DemoScenarioServiceTest {
 
         assertEquals(240, result.metricPoints());
         assertEquals(240, result.samplePoints().size());
+    }
+
+    @Test
+    void scenarioSeedMakesGeneratedStreamReproducible() {
+        DemoScenarioRequest request = new DemoScenarioRequest(120);
+
+        List<Double> first = DemoScenarioService.createScenario("latency-step", "seed-a", request, 17L)
+                .generate()
+                .stream()
+                .map(MetricPoint::value)
+                .toList();
+        List<Double> repeated = DemoScenarioService.createScenario("latency-step", "seed-b", request, 17L)
+                .generate()
+                .stream()
+                .map(MetricPoint::value)
+                .toList();
+        List<Double> different = DemoScenarioService.createScenario("latency-step", "seed-c", request, 18L)
+                .generate()
+                .stream()
+                .map(MetricPoint::value)
+                .toList();
+
+        assertEquals(first, repeated);
+        assertFalse(first.equals(different));
+    }
+
+    @Test
+    void independentProfileGuardDetectsWithoutChangingActiveRuntime() {
+        DemoDetectionRuntime runtime = new DemoDetectionRuntime();
+        var guard = DemoDetectionRuntime.createGuard(DemoDetectorProfile.AGGRESSIVE);
+        MetricScenario scenario = DemoScenarioService.createScenario("latency-step", "independent-runtime");
+
+        List<DriftEvent> events = scenario.generate().stream()
+                .flatMap(point -> guard.detect(point).stream())
+                .toList();
+
+        assertFalse(events.isEmpty());
+        assertEquals(DemoDetectorProfile.BALANCED, runtime.profile());
     }
 
     private static DemoScenarioService service() {
