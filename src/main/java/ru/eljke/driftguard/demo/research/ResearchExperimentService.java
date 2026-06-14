@@ -101,8 +101,8 @@ public class ResearchExperimentService {
             snapshot.set(new ResearchJobSnapshot(
                     jobId,
                     ResearchJobStatus.COMPLETED,
-                    report.totalTrials(),
-                    report.totalTrials(),
+                    request.totalTrials(),
+                    request.totalTrials(),
                     startedAt,
                     Instant.now(),
                     null,

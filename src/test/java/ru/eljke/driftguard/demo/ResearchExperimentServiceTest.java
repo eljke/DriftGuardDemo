@@ -26,7 +26,9 @@ class ResearchExperimentServiceTest {
             ResearchJobSnapshot result = awaitCompletion(service);
 
             assertEquals(ResearchJobStatus.COMPLETED, result.status());
-            assertEquals(8, result.completedTrials());
+            assertEquals(result.totalTrials(), result.completedTrials());
+            assertTrue(result.totalTrials() > result.report().totalTrials());
+            assertEquals(7, result.completedTrials());
             assertTrue(service.csv().contains("scenario,strategy,trials"));
             assertTrue(service.markdown().contains("# DriftGuard Research Experiment"));
         } finally {
