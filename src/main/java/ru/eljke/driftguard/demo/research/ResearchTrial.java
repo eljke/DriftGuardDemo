@@ -9,12 +9,16 @@ public record ResearchTrial(
         long seed,
         double noiseMultiplier,
         double effectMultiplier,
-        double precision,
-        double recall,
-        double f1,
+        boolean driftExpected,
+        Double precision,
+        Double recall,
+        Double f1,
         int falsePositiveEvents,
         double falsePositiveEventsPerThousand,
-        long detectionDelaySamples,
+        Long detectionDelaySamples,
+        Double specificity,
+        boolean falseAlarmFree,
+        Long timeToFirstFalseAlarmSamples,
         boolean detected
 ) {
 }

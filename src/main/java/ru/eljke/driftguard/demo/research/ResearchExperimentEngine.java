@@ -12,13 +12,16 @@ import ru.eljke.driftguard.testkit.benchmark.DetectionEvaluator;
 import ru.eljke.driftguard.testkit.benchmark.DetectionMetrics;
 import ru.eljke.driftguard.testkit.scenario.MetricScenario;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 import java.util.function.IntConsumer;
 import java.util.stream.Collectors;
 
@@ -101,10 +104,17 @@ public class ResearchExperimentEngine {
                 .flatMap(point -> guard.detect(point).stream())
                 .toList();
         DetectionMetrics metrics = DetectionEvaluator.evaluate(scenario, events);
-        double f1 = f1(metrics.precision(), metrics.recall());
-        long delaySamples = metrics.firstDetectionDelay() == null
-                ? points.size()
+        boolean driftExpected = !scenario.expectedDrifts().isEmpty();
+        Double precision = driftExpected ? metrics.precision() : null;
+        Double recall = driftExpected ? metrics.recall() : null;
+        Double f1 = driftExpected ? f1(metrics.precision(), metrics.recall()) : null;
+        Long delaySamples = metrics.firstDetectionDelay() == null
+                ? null
                 : metrics.firstDetectionDelay().toSeconds();
+        Double specificity = driftExpected ? null : events.isEmpty() ? 1.0 : 0.0;
+        Long timeToFirstFalseAlarm = driftExpected || events.isEmpty()
+                ? null
+                : Duration.between(points.getFirst().timestamp(), events.getFirst().detectedAt()).toSeconds();
         return new ResearchTrial(
                 scenarioId,
                 strategy,
@@ -112,12 +122,16 @@ public class ResearchExperimentEngine {
                 seed,
                 noiseMultiplier,
                 effectMultiplier,
-                metrics.precision(),
-                metrics.recall(),
+                driftExpected,
+                precision,
+                recall,
                 f1,
                 metrics.falsePositiveEvents(),
                 metrics.falsePositiveEvents() * 1_000.0 / points.size(),
                 delaySamples,
+                specificity,
+                metrics.falsePositiveEvents() == 0,
+                timeToFirstFalseAlarm,
                 metrics.detected()
         );
     }
@@ -136,8 +150,9 @@ public class ResearchExperimentEngine {
 
     private static ResearchAggregate aggregateGroup(List<ResearchTrial> trials) {
         ResearchTrial first = trials.getFirst();
-        double meanF1 = mean(trials, ResearchTrial::f1);
-        double standardError = standardError(trials.stream().mapToDouble(ResearchTrial::f1).toArray());
+        Double meanF1 = meanNullable(trials, ResearchTrial::f1);
+        double[] f1Values = values(trials, ResearchTrial::f1);
+        double standardError = standardError(f1Values);
         Map<String, Integer> profiles = trials.stream()
                 .collect(Collectors.toMap(
                         trial -> trial.selectedProfile().name(),
@@ -149,20 +164,36 @@ public class ResearchExperimentEngine {
                 first.scenario(),
                 first.strategy(),
                 trials.size(),
-                mean(trials, ResearchTrial::precision),
-                mean(trials, ResearchTrial::recall),
+                meanNullable(trials, ResearchTrial::precision),
+                meanNullable(trials, ResearchTrial::recall),
                 meanF1,
-                Math.max(0.0, meanF1 - 1.96 * standardError),
-                Math.min(1.0, meanF1 + 1.96 * standardError),
+                meanF1 == null ? null : Math.max(0.0, meanF1 - 1.96 * standardError),
+                meanF1 == null ? null : Math.min(1.0, meanF1 + 1.96 * standardError),
                 mean(trials, ResearchTrial::falsePositiveEventsPerThousand),
-                mean(trials, trial -> trial.detectionDelaySamples()),
-                mean(trials, trial -> trial.detected() ? 1.0 : 0.0),
+                meanNullable(trials, ResearchTrial::detectionDelaySamples),
+                first.driftExpected() ? mean(trials, trial -> trial.detected() ? 1.0 : 0.0) : null,
+                meanNullable(trials, ResearchTrial::specificity),
+                mean(trials, trial -> trial.falseAlarmFree() ? 1.0 : 0.0),
+                meanNullable(trials, ResearchTrial::timeToFirstFalseAlarmSamples),
                 profiles
         );
     }
 
     private static double mean(List<ResearchTrial> trials, java.util.function.ToDoubleFunction<ResearchTrial> value) {
         return trials.stream().mapToDouble(value).average().orElse(0.0);
+    }
+
+    private static Double meanNullable(List<ResearchTrial> trials, Function<ResearchTrial, Number> value) {
+        double[] values = values(trials, value);
+        return values.length == 0 ? null : Arrays.stream(values).average().orElseThrow();
+    }
+
+    private static double[] values(List<ResearchTrial> trials, Function<ResearchTrial, Number> value) {
+        return trials.stream()
+                .map(value)
+                .filter(java.util.Objects::nonNull)
+                .mapToDouble(Number::doubleValue)
+                .toArray();
     }
 
     private static double standardError(double[] values) {

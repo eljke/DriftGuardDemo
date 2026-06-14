@@ -10,7 +10,8 @@ public final class ResearchReportExporter {
     public static String csv(ResearchExperimentReport report) {
         StringBuilder csv = new StringBuilder();
         csv.append("scenario,strategy,trials,precision,recall,f1,f1_ci_low,f1_ci_high,")
-                .append("false_positives_per_1000,delay_samples,detection_rate,selected_profiles\n");
+                .append("false_positives_per_1000,delay_samples,detection_rate,specificity,")
+                .append("false_alarm_free_rate,mean_time_to_false_alarm_samples,selected_profiles\n");
         for (ResearchAggregate result : report.aggregates()) {
             csv.append(result.scenario()).append(',')
                     .append(result.strategy()).append(',')
@@ -23,6 +24,9 @@ public final class ResearchReportExporter {
                     .append(decimal(result.meanFalsePositiveEventsPerThousand())).append(',')
                     .append(decimal(result.meanDetectionDelaySamples())).append(',')
                     .append(decimal(result.detectionRate())).append(',')
+                    .append(decimal(result.meanSpecificity())).append(',')
+                    .append(decimal(result.falseAlarmFreeRate())).append(',')
+                    .append(decimal(result.meanTimeToFirstFalseAlarmSamples())).append(',')
                     .append('"').append(profileCounts(result)).append('"')
                     .append('\n');
         }
@@ -40,19 +44,21 @@ public final class ResearchReportExporter {
                 .append("- Repetitions: ").append(report.request().repetitions()).append('\n')
                 .append("- Samples per stream: ").append(report.request().samples()).append('\n')
                 .append("- Base seed: ").append(report.request().baseSeed()).append("\n\n")
-                .append("| Scenario | Strategy | F1 | 95% CI | Precision | Recall | FP/1000 | Delay | Detection rate |\n")
-                .append("|---|---|---:|---:|---:|---:|---:|---:|---:|\n");
+                .append("| Scenario | Strategy | F1 | 95% CI | Precision | Recall | FP/1000 | Delay | Detection rate | Specificity | Alarm-free | Mean time to false alarm |\n")
+                .append("|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|\n");
         for (ResearchAggregate result : report.aggregates()) {
             markdown.append("| ").append(result.scenario())
                     .append(" | ").append(result.strategy())
                     .append(" | ").append(percent(result.meanF1()))
-                    .append(" | ").append(percent(result.f1ConfidenceLow()))
-                    .append("-").append(percent(result.f1ConfidenceHigh()))
+                    .append(" | ").append(interval(result.f1ConfidenceLow(), result.f1ConfidenceHigh()))
                     .append(" | ").append(percent(result.meanPrecision()))
                     .append(" | ").append(percent(result.meanRecall()))
                     .append(" | ").append(decimal(result.meanFalsePositiveEventsPerThousand()))
                     .append(" | ").append(decimal(result.meanDetectionDelaySamples()))
                     .append(" | ").append(percent(result.detectionRate()))
+                    .append(" | ").append(percent(result.meanSpecificity()))
+                    .append(" | ").append(percent(result.falseAlarmFreeRate()))
+                    .append(" | ").append(decimal(result.meanTimeToFirstFalseAlarmSamples()))
                     .append(" |\n");
         }
         return markdown.toString();
@@ -64,11 +70,21 @@ public final class ResearchReportExporter {
                 .collect(Collectors.joining(";"));
     }
 
-    private static String decimal(double value) {
+    private static String decimal(Double value) {
+        if (value == null) {
+            return "N/A";
+        }
         return String.format(Locale.ROOT, "%.6f", value);
     }
 
-    private static String percent(double value) {
+    private static String percent(Double value) {
+        if (value == null) {
+            return "N/A";
+        }
         return String.format(Locale.ROOT, "%.1f%%", value * 100.0);
+    }
+
+    private static String interval(Double low, Double high) {
+        return low == null ? "N/A" : percent(low) + "-" + percent(high);
     }
 }

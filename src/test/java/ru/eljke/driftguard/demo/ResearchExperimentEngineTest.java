@@ -12,6 +12,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ResearchExperimentEngineTest {
@@ -31,10 +32,23 @@ class ResearchExperimentEngineTest {
         assertEquals(16, report.totalTrials());
         assertEquals(8, report.aggregates().size());
         assertTrue(report.aggregates().stream().allMatch(result -> result.trials() == 2));
-        assertTrue(report.aggregates().stream().allMatch(result ->
-                result.f1ConfidenceLow() <= result.meanF1()
-                        && result.meanF1() <= result.f1ConfidenceHigh()
+        assertTrue(report.aggregates().stream()
+                .filter(result -> result.meanF1() != null)
+                .allMatch(result ->
+                        result.f1ConfidenceLow() <= result.meanF1()
+                                && result.meanF1() <= result.f1ConfidenceHigh()
         ));
+        var seasonal = report.aggregates().stream()
+                .filter(result -> result.scenario().equals("seasonal-latency"))
+                .toList();
+        assertTrue(seasonal.stream().allMatch(result -> result.meanSpecificity() != null));
+        seasonal.forEach(result -> {
+            assertNull(result.meanPrecision());
+            assertNull(result.meanRecall());
+            assertNull(result.meanF1());
+            assertNull(result.meanDetectionDelaySamples());
+            assertNull(result.detectionRate());
+        });
     }
 
     @Test
