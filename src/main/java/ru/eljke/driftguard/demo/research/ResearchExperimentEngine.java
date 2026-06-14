@@ -33,38 +33,82 @@ public class ResearchExperimentEngine {
             BooleanSupplier cancelled
     ) {
         ResearchExperimentRequest request = rawRequest.normalized();
-        List<ResearchTrial> trials = new ArrayList<>(request.totalTrials());
+        List<CalibrationExample> calibrationExamples = new ArrayList<>();
+        Map<String, Integer> bestProfileLabels = new LinkedHashMap<>();
+        int calibrationTrials = 0;
         int completed = 0;
 
         for (String scenarioId : request.scenarios()) {
             for (double noiseMultiplier : request.noiseMultipliers()) {
                 for (double effectMultiplier : request.effectMultipliers()) {
-                    for (int repetition = 0; repetition < request.repetitions(); repetition++) {
+                    for (int repetition = 0; repetition < request.calibrationRepetitions(); repetition++) {
                         if (cancelled.getAsBoolean()) {
                             throw new CancellationException("Research experiment was cancelled");
                         }
                         long seed = request.baseSeed() + repetition;
-                        DemoScenarioRequest scenarioRequest = scenarioRequest(
+                        GeneratedScenario generated = generateScenario(
                                 scenarioId,
-                                request.samples(),
                                 noiseMultiplier,
-                                effectMultiplier
-                        );
-                        MetricScenario scenario = DemoScenarioService.createScenario(
-                                scenarioId,
-                                "research-" + seed,
-                                scenarioRequest,
+                                effectMultiplier,
+                                request.samples(),
                                 seed
                         );
-                        List<MetricPoint> points = scenario.generate();
-                        StreamCharacteristics characteristics = StreamCharacteristics.fromBaseline(points);
+                        List<ResearchTrial> candidates = new ArrayList<>();
+                        for (ResearchStrategy strategy : ResearchStrategy.fixed()) {
+                            candidates.add(runTrial(
+                                    scenarioId,
+                                    generated.scenario(),
+                                    generated.points(),
+                                    strategy,
+                                    strategy.fixedProfile(),
+                                    seed,
+                                    noiseMultiplier,
+                                    effectMultiplier
+                            ));
+                            progress.accept(++completed);
+                            calibrationTrials++;
+                        }
+                        ResearchTrial best = candidates.stream()
+                                .max(java.util.Comparator.comparingDouble(
+                                        trial -> utility(trial, request.samples())
+                                ))
+                                .orElseThrow();
+                        calibrationExamples.add(new CalibrationExample(
+                                StreamCharacteristics.fromBaseline(generated.points()),
+                                best.selectedProfile()
+                        ));
+                        bestProfileLabels.merge(best.selectedProfile().name(), 1, Integer::sum);
+                    }
+                }
+            }
+        }
 
+        CalibratedProfileSelector selector = new CalibratedProfileSelector(calibrationExamples);
+        List<ResearchTrial> trials = new ArrayList<>();
+        for (String scenarioId : request.scenarios()) {
+            for (double noiseMultiplier : request.noiseMultipliers()) {
+                for (double effectMultiplier : request.effectMultipliers()) {
+                    for (int repetition = 0; repetition < request.holdoutRepetitions(); repetition++) {
+                        if (cancelled.getAsBoolean()) {
+                            throw new CancellationException("Research experiment was cancelled");
+                        }
+                        long seed = request.baseSeed() + request.calibrationRepetitions() + repetition;
+                        GeneratedScenario generated = generateScenario(
+                                scenarioId,
+                                noiseMultiplier,
+                                effectMultiplier,
+                                request.samples(),
+                                seed
+                        );
+                        StreamCharacteristics characteristics = StreamCharacteristics.fromBaseline(generated.points());
                         for (ResearchStrategy strategy : ResearchStrategy.values()) {
-                            DemoDetectorProfile profile = strategy.profileFor(characteristics);
+                            DemoDetectorProfile profile = strategy == ResearchStrategy.ADAPTIVE
+                                    ? selector.select(characteristics)
+                                    : strategy.fixedProfile();
                             trials.add(runTrial(
                                     scenarioId,
-                                    scenario,
-                                    points,
+                                    generated.scenario(),
+                                    generated.points(),
                                     strategy,
                                     profile,
                                     seed,
@@ -79,14 +123,38 @@ public class ResearchExperimentEngine {
         }
 
         return new ResearchExperimentReport(
-                "An adaptive profile selected from baseline stream characteristics improves the F1-delay trade-off over fixed sensitivity profiles.",
-                "Paired deterministic trials use identical scenario parameters and seeds for every strategy. Means and normal-approximation 95% confidence intervals are reported.",
+                "A profile selector calibrated on robust baseline characteristics improves utility on unseen streams over fixed sensitivity profiles.",
+                "Fixed profiles label calibration streams by utility. A standardized five-nearest-neighbor selector uses only baseline characteristics and is evaluated on disjoint deterministic hold-out seeds.",
                 Instant.now(),
                 request,
                 trials.size(),
+                new ResearchCalibrationSummary(
+                        request.calibrationRepetitions(),
+                        request.holdoutRepetitions(),
+                        calibrationTrials,
+                        trials.size(),
+                        calibrationExamples.size(),
+                        Map.copyOf(bestProfileLabels)
+                ),
                 aggregate(trials),
                 List.copyOf(trials)
         );
+    }
+
+    private static GeneratedScenario generateScenario(
+            String scenarioId,
+            double noiseMultiplier,
+            double effectMultiplier,
+            int samples,
+            long seed
+    ) {
+        MetricScenario scenario = DemoScenarioService.createScenario(
+                scenarioId,
+                "research-" + seed,
+                scenarioRequest(scenarioId, samples, noiseMultiplier, effectMultiplier),
+                seed
+        );
+        return new GeneratedScenario(scenario, scenario.generate());
     }
 
     private static ResearchTrial runTrial(
@@ -211,6 +279,17 @@ public class ResearchExperimentEngine {
         return precision + recall == 0.0 ? 0.0 : 2.0 * precision * recall / (precision + recall);
     }
 
+    static double utility(ResearchTrial trial, int samples) {
+        double falsePositivePenalty = 0.25 * trial.falsePositiveEvents() / samples;
+        if (!trial.driftExpected()) {
+            return trial.specificity() - falsePositivePenalty;
+        }
+        double normalizedDelay = trial.detectionDelaySamples() == null
+                ? 1.0
+                : Math.min(1.0, trial.detectionDelaySamples() / (double) samples);
+        return trial.f1() - falsePositivePenalty - 0.15 * normalizedDelay;
+    }
+
     private static DemoScenarioRequest scenarioRequest(
             String scenarioId,
             int samples,
@@ -235,5 +314,8 @@ public class ResearchExperimentEngine {
             );
             default -> throw new IllegalArgumentException("Unsupported research scenario: " + scenarioId);
         };
+    }
+
+    private record GeneratedScenario(MetricScenario scenario, List<MetricPoint> points) {
     }
 }

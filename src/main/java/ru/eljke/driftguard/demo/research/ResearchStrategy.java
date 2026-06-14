@@ -14,17 +14,14 @@ public enum ResearchStrategy {
         this.fixedProfile = fixedProfile;
     }
 
-    public DemoDetectorProfile profileFor(StreamCharacteristics characteristics) {
-        if (fixedProfile != null) {
-            return fixedProfile;
+    public DemoDetectorProfile fixedProfile() {
+        if (fixedProfile == null) {
+            throw new IllegalStateException("Adaptive strategy requires a calibrated selector");
         }
-        if (Math.abs(characteristics.lagOneAutocorrelation()) >= 0.65
-                || characteristics.coefficientOfVariation() >= 0.12) {
-            return DemoDetectorProfile.CONSERVATIVE;
-        }
-        if (characteristics.coefficientOfVariation() <= 0.04) {
-            return DemoDetectorProfile.AGGRESSIVE;
-        }
-        return DemoDetectorProfile.BALANCED;
+        return fixedProfile;
+    }
+
+    public static java.util.List<ResearchStrategy> fixed() {
+        return java.util.List.of(AGGRESSIVE, BALANCED, CONSERVATIVE);
     }
 }

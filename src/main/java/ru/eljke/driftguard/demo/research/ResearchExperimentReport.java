@@ -9,6 +9,7 @@ public record ResearchExperimentReport(
         Instant completedAt,
         ResearchExperimentRequest request,
         int totalTrials,
+        ResearchCalibrationSummary calibration,
         List<ResearchAggregate> aggregates,
         List<ResearchTrial> trials
 ) {

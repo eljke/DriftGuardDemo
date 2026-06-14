@@ -31,11 +31,22 @@ public record ResearchExperimentRequest(
 
     public int totalTrials() {
         ResearchExperimentRequest request = normalized();
-        return request.repetitions()
-                * request.scenarios().size()
+        int cells = request.scenarios().size()
                 * request.noiseMultipliers().size()
-                * request.effectMultipliers().size()
-                * ResearchStrategy.values().length;
+                * request.effectMultipliers().size();
+        return cells * (
+                request.calibrationRepetitions() * ResearchStrategy.fixed().size()
+                        + request.holdoutRepetitions() * ResearchStrategy.values().length
+        );
+    }
+
+    public int calibrationRepetitions() {
+        return Math.max(1, normalized().repetitions() / 3);
+    }
+
+    public int holdoutRepetitions() {
+        ResearchExperimentRequest request = normalized();
+        return request.repetitions() - request.calibrationRepetitions();
     }
 
     private static int bounded(Integer value, int fallback, int min, int max) {

@@ -29,9 +29,11 @@ class ResearchExperimentEngineTest {
 
         ResearchExperimentReport report = new ResearchExperimentEngine().run(request, ignored -> { }, () -> false);
 
-        assertEquals(16, report.totalTrials());
+        assertEquals(8, report.totalTrials());
         assertEquals(8, report.aggregates().size());
-        assertTrue(report.aggregates().stream().allMatch(result -> result.trials() == 2));
+        assertEquals(6, report.calibration().calibrationTrials());
+        assertEquals(2, report.calibration().trainingExamples());
+        assertTrue(report.aggregates().stream().allMatch(result -> result.trials() == 1));
         assertTrue(report.aggregates().stream()
                 .filter(result -> result.meanF1() != null)
                 .allMatch(result ->
@@ -52,18 +54,25 @@ class ResearchExperimentEngineTest {
     }
 
     @Test
-    void adaptiveSelectorUsesBaselineVariabilityAndSeasonality() {
+    void calibratedSelectorUsesNearestRobustBaseline() {
+        StreamCharacteristics stable = characteristics(0.02, 0.1, 0.01, 0.0, 0.0);
+        StreamCharacteristics seasonal = characteristics(0.15, 0.8, 0.12, 0.02, 0.05);
+        var selector = new ru.eljke.driftguard.demo.research.CalibratedProfileSelector(List.of(
+                new ru.eljke.driftguard.demo.research.CalibrationExample(
+                        stable, DemoDetectorProfile.AGGRESSIVE
+                ),
+                new ru.eljke.driftguard.demo.research.CalibrationExample(
+                        seasonal, DemoDetectorProfile.CONSERVATIVE
+                )
+        ));
+
         assertEquals(
                 DemoDetectorProfile.AGGRESSIVE,
-                ResearchStrategy.ADAPTIVE.profileFor(new StreamCharacteristics(100.0, 2.0, 0.02, 0.1))
+                selector.select(characteristics(0.021, 0.11, 0.011, 0.0, 0.0))
         );
         assertEquals(
                 DemoDetectorProfile.CONSERVATIVE,
-                ResearchStrategy.ADAPTIVE.profileFor(new StreamCharacteristics(100.0, 5.0, 0.05, 0.8))
-        );
-        assertEquals(
-                DemoDetectorProfile.CONSERVATIVE,
-                ResearchStrategy.ADAPTIVE.profileFor(new StreamCharacteristics(1.0, 0.2, 0.2, 0.1))
+                selector.select(characteristics(0.14, 0.75, 0.11, 0.02, 0.04))
         );
     }
 
@@ -80,5 +89,24 @@ class ResearchExperimentEngineTest {
         assertEquals(first.trials(), repeated.trials());
         assertEquals(first.aggregates(), repeated.aggregates());
         assertFalse(first.trials().isEmpty());
+    }
+
+    private static StreamCharacteristics characteristics(
+            double coefficientOfVariation,
+            double autocorrelation,
+            double madRatio,
+            double trend,
+            double outlierRate
+    ) {
+        return new StreamCharacteristics(
+                100.0,
+                coefficientOfVariation * 100.0,
+                coefficientOfVariation,
+                autocorrelation,
+                100.0,
+                madRatio,
+                trend,
+                outlierRate
+        );
     }
 }
