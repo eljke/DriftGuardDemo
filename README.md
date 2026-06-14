@@ -29,6 +29,10 @@ The demo also enables DriftGuard's built-in webhook sink. It posts alert JSON to
 
 Synthetic benchmark screens use `driftguard-testkit`: scenarios generate reproducible metric streams, benchmark runners calculate precision/recall and first-detection delay, and reports can be rendered to Markdown for review notes.
 
+`Research Lab` extends this into a reproducible paired experiment. It compares three fixed detector profiles with an adaptive strategy that selects a profile from baseline variability and lag-one autocorrelation. The experiment varies scenario type, noise, effect size and random seed, then reports F1, precision, recall, false positives per 1,000 observations, detection delay and 95% confidence intervals.
+
+The research methodology, hypotheses and validity limitations are documented in [RESEARCH.md](RESEARCH.md).
+
 `Kafka Service` needs a reachable Kafka broker; use the full Docker stack below for the complete two-scenario demo.
 
 The checkout screen is organized like a small operations console: summary cards, manual operations, runtime pipeline, metrics grouped by signal type, operation-level aggregates, recent operation log and emitted alerts.
@@ -61,3 +65,11 @@ npm run dev
 ```
 
 Vite proxies `/api`, `/actuator`, `/v3` and Swagger requests to `localhost:8080`.
+
+## Research API
+
+- `POST /api/research` starts an asynchronous experiment.
+- `GET /api/research` returns progress and the latest completed report.
+- `POST /api/research/cancel` requests cancellation.
+- `GET /api/research/export.csv` exports aggregate results.
+- `GET /api/research/export.md` exports a report suitable for review notes.

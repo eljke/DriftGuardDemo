@@ -28,6 +28,8 @@ class OpenApiEndpointTest {
                 .andExpect(jsonPath("$.paths['/api/demo/kafka/operations']").exists())
                 .andExpect(jsonPath("$.paths['/api/demo/alerts/webhook-deliveries']").exists())
                 .andExpect(jsonPath("$.paths['/api/demo/tools']").exists())
+                .andExpect(jsonPath("$.paths['/api/research']").exists())
+                .andExpect(jsonPath("$.paths['/api/research/export.csv']").exists())
                 .andExpect(jsonPath("$.components.schemas.DriftEvent.description").exists())
                 .andExpect(jsonPath("$.components.schemas.MetricPoint.properties.value.description").exists())
                 .andExpect(jsonPath("$.components.schemas.DemoRunResult.properties.quality.description").exists())
@@ -37,6 +39,26 @@ class OpenApiEndpointTest {
                 .andExpect(jsonPath("$.components.schemas.DemoConfigurationView.properties.aggressiveness.description").exists())
                 .andExpect(jsonPath("$.components.schemas.DetectorConfigurationView.properties.sensitivity.description").exists())
                 .andExpect(jsonPath("$.components.schemas.ToolLink.properties.url.description").exists());
+    }
+
+    @Test
+    void startsResearchExperimentThroughRestApi() throws Exception {
+        mockMvc.perform(post("/api/research")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "repetitions": 2,
+                                  "samples": 120,
+                                  "baseSeed": 700,
+                                  "scenarios": ["latency-step"],
+                                  "noiseMultipliers": [1.0],
+                                  "effectMultipliers": [1.0]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("RUNNING"))
+                .andExpect(jsonPath("$.totalTrials").value(8))
+                .andExpect(jsonPath("$.progressPercent").isNumber());
     }
 
     @Test

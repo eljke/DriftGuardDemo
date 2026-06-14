@@ -234,7 +234,12 @@ public class DemoController {
                 Map.entry("tools", "GET /api/demo/tools"),
                 Map.entry("capabilities", "GET /api/demo/capabilities"),
                 Map.entry("configuration", "GET /api/demo/configuration"),
-                Map.entry("updateProfile", "POST /api/demo/configuration/profile/{profile}")
+                Map.entry("updateProfile", "POST /api/demo/configuration/profile/{profile}"),
+                Map.entry("researchStatus", "GET /api/research"),
+                Map.entry("startResearch", "POST /api/research"),
+                Map.entry("cancelResearch", "POST /api/research/cancel"),
+                Map.entry("exportResearchCsv", "GET /api/research/export.csv"),
+                Map.entry("exportResearchMarkdown", "GET /api/research/export.md")
         );
     }
 }
