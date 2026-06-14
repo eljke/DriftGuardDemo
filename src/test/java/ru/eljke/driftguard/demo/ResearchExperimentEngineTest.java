@@ -106,6 +106,34 @@ class ResearchExperimentEngineTest {
         assertFalse(first.trials().isEmpty());
     }
 
+    @Test
+    void adaptivePreservesAggressiveErrorRateBehavior() {
+        ResearchExperimentRequest request = new ResearchExperimentRequest(
+                6,
+                400,
+                1_000L,
+                List.of("error-rate-spike"),
+                List.of(1.0),
+                List.of(1.0)
+        );
+
+        ResearchExperimentReport report = new ResearchExperimentEngine().run(request, ignored -> { }, () -> false);
+        var aggressive = report.aggregates().stream()
+                .filter(result -> result.strategy() == ResearchStrategy.AGGRESSIVE)
+                .findFirst()
+                .orElseThrow();
+        var adaptive = report.aggregates().stream()
+                .filter(result -> result.strategy() == ResearchStrategy.ADAPTIVE)
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(
+                report.calibration().holdoutRepetitions(),
+                adaptive.selectedProfiles().get(DetectorSensitivityProfile.AGGRESSIVE.name())
+        );
+        assertTrue(adaptive.meanF1() >= aggressive.meanF1() - 0.01);
+    }
+
     private static BaselineCharacteristics characteristics(
             double mean,
             double standardDeviation,

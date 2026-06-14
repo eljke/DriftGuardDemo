@@ -199,13 +199,16 @@ public class DemoDetectionRuntime {
                 selector,
                 pageHinkleyConfig(metric, delta, direction, aggressive),
                 pageHinkleyConfig(metric, delta, direction, balanced),
-                pageHinkleyConfig(metric, delta, direction, conservative)
+                pageHinkleyConfig(metric, delta, direction, conservative),
+                aggressive.emissionPolicy(),
+                balanced.emissionPolicy(),
+                conservative.emissionPolicy()
         );
         return DetectorDefinition.builder()
                 .name(name)
                 .config(config)
                 .appliesTo(MetricSelector.builder().metric(metric).build())
-                .emissionPolicy(conservative.emissionPolicy())
+                .emissionPolicy(balanced.emissionPolicy())
                 .build();
     }
 
