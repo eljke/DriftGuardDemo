@@ -46,6 +46,9 @@ class ResearchExperimentEngineTest {
                 .filter(result -> result.scenario().equals("seasonal-latency"))
                 .toList();
         assertTrue(seasonal.stream().allMatch(result -> result.meanSpecificity() != null));
+        assertTrue(seasonal.stream().allMatch(result ->
+                result.meanSpecificity() >= result.falseAlarmFreeRate()
+        ));
         seasonal.forEach(result -> {
             assertNull(result.meanPrecision());
             assertNull(result.meanRecall());

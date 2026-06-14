@@ -197,7 +197,9 @@ public class ResearchExperimentEngine {
         Long delaySamples = metrics.firstDetectionDelay() == null
                 ? null
                 : metrics.firstDetectionDelay().toSeconds();
-        Double specificity = driftExpected ? null : events.isEmpty() ? 1.0 : 0.0;
+        Double specificity = driftExpected
+                ? null
+                : Math.max(0.0, 1.0 - metrics.falsePositiveEvents() / (double) points.size());
         Long timeToFirstFalseAlarm = driftExpected || events.isEmpty()
                 ? null
                 : Duration.between(points.getFirst().timestamp(), events.getFirst().detectedAt()).toSeconds();
