@@ -100,6 +100,12 @@ public class DemoConfigurationService {
                     "Requires stronger and more persistent evidence before emitting alerts."
             );
         }
+        if (runtime.profile() == DemoDetectorProfile.ADAPTIVE) {
+            return new DemoConfigurationView.AggressivenessView(
+                    "Adaptive",
+                    "Selects an aggressive, balanced or conservative profile independently for every metric stream."
+            );
+        }
         return new DemoConfigurationView.AggressivenessView(
                 "Balanced",
                 "Balances detection latency and false-positive control for the demo scenarios."

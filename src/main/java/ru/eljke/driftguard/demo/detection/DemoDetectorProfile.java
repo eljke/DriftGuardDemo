@@ -8,7 +8,8 @@ import java.util.Locale;
 public enum DemoDetectorProfile {
     AGGRESSIVE,
     BALANCED,
-    CONSERVATIVE;
+    CONSERVATIVE,
+    ADAPTIVE;
 
     public static DemoDetectorProfile parse(String value) {
         if (value == null || value.isBlank()) {
