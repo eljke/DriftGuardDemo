@@ -205,7 +205,7 @@ public class DemoDetectionRuntime {
                 .name(name)
                 .config(config)
                 .appliesTo(MetricSelector.builder().metric(metric).build())
-                .emissionPolicy(balanced.emissionPolicy())
+                .emissionPolicy(conservative.emissionPolicy())
                 .build();
     }
 
