@@ -6,12 +6,7 @@ import { MetricCard, Notice, Panel, Progress } from "../components/ui";
 import { ResearchF1Chart } from "../features/research/ResearchF1Chart";
 import { useI18n } from "../i18n";
 import { readableError } from "../lib/format";
-import type {
-  DemoScenarioDescriptor,
-  ResearchAggregate,
-  ResearchExperimentRequest,
-  ResearchStrategy
-} from "../types";
+import type { DemoScenarioDescriptor, ResearchExperimentRequest, ResearchStrategy } from "../types";
 
 const defaultScenarios = [
   "latency-step",
@@ -47,14 +42,10 @@ export function ResearchPage({ scenarios }: { scenarios: DemoScenarioDescriptor[
   });
   const snapshot = job.data;
   const report = snapshot?.report;
-  const adaptive = useMemo(
-    () => report?.aggregates.filter((result) => result.strategy === "ADAPTIVE") ?? [],
+  const overallComparison = useMemo(
+    () => report?.comparisons.find((comparison) => comparison.scope === "ALL"),
     [report]
   );
-  const best = useMemo(() => {
-    if (!report?.aggregates.length) return undefined;
-    return [...report.aggregates].sort((left, right) => right.meanF1 - left.meanF1)[0];
-  }, [report]);
   const error = start.error ?? cancel.error ?? job.error;
 
   return (
@@ -132,10 +123,10 @@ export function ResearchPage({ scenarios }: { scenarios: DemoScenarioDescriptor[
       {report && (
         <>
           <div className="summary-grid">
-            <MetricCard title={t("research.trials")} value={report.totalTrials} helper={t("research.paired")} />
-            <MetricCard title={t("research.bestF1")} value={best ? percent(best.meanF1) : "—"} helper={best ? `${best.strategy} · ${best.scenario}` : "—"} />
-            <MetricCard title={t("research.adaptiveWins")} value={adaptiveWins(report.aggregates)} helper={t("research.scenarioCount")} />
-            <MetricCard title={t("research.completed")} value={new Date(report.completedAt).toLocaleString()} helper={t("research.reproducible")} />
+            <MetricCard title={t("research.holdoutTrials")} value={report.totalTrials} helper={`${report.calibration.calibrationTrials} ${t("research.calibrationTrials")}`} />
+            <MetricCard title={t("research.utilityDelta")} value={overallComparison ? signed(overallComparison.meanDelta) : "—"} helper={overallComparison ? `95% CI ${interval(overallComparison.confidenceLow, overallComparison.confidenceHigh)}` : "—"} />
+            <MetricCard title={t("research.significance")} value={overallComparison ? formatP(overallComparison.wilcoxonPValue) : "—"} helper={overallComparison && overallComparison.wilcoxonPValue < 0.05 ? t("research.significant") : t("research.notSignificant")} />
+            <MetricCard title={t("research.baseline")} value={report.calibration.bestGlobalProfile} helper={`${report.calibration.calibrationRepetitions}/${report.calibration.holdoutRepetitions} ${t("research.split")}`} />
           </div>
 
           <Panel title={t("research.f1Chart")}>
@@ -155,6 +146,8 @@ export function ResearchPage({ scenarios }: { scenarios: DemoScenarioDescriptor[
                     <th>Precision</th>
                     <th>Recall</th>
                     <th>FP/1000</th>
+                    <th>{t("research.specificity")}</th>
+                    <th>{t("research.alarmFree")}</th>
                     <th>{t("research.delay")}</th>
                     <th>{t("research.profileChoice")}</th>
                   </tr>
@@ -165,11 +158,13 @@ export function ResearchPage({ scenarios }: { scenarios: DemoScenarioDescriptor[
                       <td>{result.scenario}</td>
                       <td><StrategyBadge strategy={result.strategy} /></td>
                       <td>{percent(result.meanF1)}</td>
-                      <td>{percent(result.f1ConfidenceLow)}-{percent(result.f1ConfidenceHigh)}</td>
+                      <td>{percentInterval(result.f1ConfidenceLow, result.f1ConfidenceHigh)}</td>
                       <td>{percent(result.meanPrecision)}</td>
                       <td>{percent(result.meanRecall)}</td>
                       <td>{result.meanFalsePositiveEventsPerThousand.toFixed(2)}</td>
-                      <td>{result.meanDetectionDelaySamples.toFixed(1)}</td>
+                      <td>{percent(result.meanSpecificity)}</td>
+                      <td>{percent(result.falseAlarmFreeRate)}</td>
+                      <td>{decimal(result.meanDetectionDelaySamples)}</td>
                       <td>{Object.entries(result.selectedProfiles).map(([profile, count]) => `${profile}: ${count}`).join(", ")}</td>
                     </tr>
                   ))}
@@ -183,6 +178,41 @@ export function ResearchPage({ scenarios }: { scenarios: DemoScenarioDescriptor[
               <a className="secondary-button" href="/api/research/export.md">
                 <Download size={16} /> Markdown
               </a>
+            </div>
+          </Panel>
+
+          <Panel title={t("research.comparison")}>
+            <div className="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>{t("research.scope")}</th>
+                    <th>{t("research.baseline")}</th>
+                    <th>{t("research.pairs")}</th>
+                    <th>Δ utility</th>
+                    <th>Bootstrap 95% CI</th>
+                    <th>Wilcoxon p</th>
+                    <th>{t("research.wins")}</th>
+                    <th>{t("research.losses")}</th>
+                    <th>{t("research.ties")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {report.comparisons.map((comparison) => (
+                    <tr key={comparison.scope}>
+                      <td>{comparison.scope}</td>
+                      <td>{comparison.baselineProfile}</td>
+                      <td>{comparison.pairs}</td>
+                      <td>{signed(comparison.meanDelta)}</td>
+                      <td>{interval(comparison.confidenceLow, comparison.confidenceHigh)}</td>
+                      <td>{formatP(comparison.wilcoxonPValue)}</td>
+                      <td>{comparison.adaptiveWins}</td>
+                      <td>{comparison.adaptiveLosses}</td>
+                      <td>{comparison.ties}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </Panel>
         </>
@@ -211,15 +241,26 @@ function StrategyBadge({ strategy }: { strategy: ResearchStrategy }) {
   return <span className={`research-strategy ${strategy.toLowerCase()}`}>{strategy}</span>;
 }
 
-function adaptiveWins(results: ResearchAggregate[]) {
-  const scenarios = [...new Set(results.map((result) => result.scenario))];
-  return scenarios.filter((scenario) => {
-    const rows = results.filter((result) => result.scenario === scenario);
-    const adaptive = rows.find((result) => result.strategy === "ADAPTIVE");
-    return adaptive && adaptive.meanF1 >= Math.max(...rows.map((result) => result.meanF1));
-  }).length;
+function percent(value: number | null) {
+  return value == null ? "N/A" : `${(value * 100).toFixed(1)}%`;
 }
 
-function percent(value: number) {
-  return `${(value * 100).toFixed(1)}%`;
+function decimal(value: number | null) {
+  return value == null ? "N/A" : value.toFixed(1);
+}
+
+function interval(low: number | null, high: number | null) {
+  return low == null || high == null ? "N/A" : `${signed(low)}…${signed(high)}`;
+}
+
+function percentInterval(low: number | null, high: number | null) {
+  return low == null || high == null ? "N/A" : `${percent(low)}…${percent(high)}`;
+}
+
+function signed(value: number) {
+  return `${value >= 0 ? "+" : ""}${value.toFixed(4)}`;
+}
+
+function formatP(value: number) {
+  return value < 0.001 ? "< 0.001" : value.toFixed(3);
 }

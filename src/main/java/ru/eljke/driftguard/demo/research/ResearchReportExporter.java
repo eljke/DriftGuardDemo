@@ -9,12 +9,15 @@ public final class ResearchReportExporter {
 
     public static String csv(ResearchExperimentReport report) {
         StringBuilder csv = new StringBuilder();
-        csv.append("scenario,strategy,trials,precision,recall,f1,f1_ci_low,f1_ci_high,")
+        csv.append("row_type,scope,strategy,baseline_profile,trials_or_pairs,precision,recall,f1,f1_ci_low,f1_ci_high,")
                 .append("false_positives_per_1000,delay_samples,detection_rate,specificity,")
-                .append("false_alarm_free_rate,mean_time_to_false_alarm_samples,selected_profiles\n");
+                .append("false_alarm_free_rate,mean_time_to_false_alarm_samples,mean_delta,delta_ci_low,")
+                .append("delta_ci_high,wilcoxon_p,wins,losses,ties,selected_profiles\n");
         for (ResearchAggregate result : report.aggregates()) {
-            csv.append(result.scenario()).append(',')
+            csv.append("aggregate,")
+                    .append(result.scenario()).append(',')
                     .append(result.strategy()).append(',')
+                    .append(',')
                     .append(result.trials()).append(',')
                     .append(decimal(result.meanPrecision())).append(',')
                     .append(decimal(result.meanRecall())).append(',')
@@ -27,7 +30,25 @@ public final class ResearchReportExporter {
                     .append(decimal(result.meanSpecificity())).append(',')
                     .append(decimal(result.falseAlarmFreeRate())).append(',')
                     .append(decimal(result.meanTimeToFirstFalseAlarmSamples())).append(',')
+                    .append("N/A,N/A,N/A,N/A,N/A,N/A,N/A,")
                     .append('"').append(profileCounts(result)).append('"')
+                    .append('\n');
+        }
+        for (ResearchComparison comparison : report.comparisons()) {
+            csv.append("comparison,")
+                    .append(comparison.scope()).append(',')
+                    .append("ADAPTIVE,")
+                    .append(comparison.baselineProfile()).append(',')
+                    .append(comparison.pairs()).append(',')
+                    .append("N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,")
+                    .append(decimal(comparison.meanDelta())).append(',')
+                    .append(decimal(comparison.confidenceLow())).append(',')
+                    .append(decimal(comparison.confidenceHigh())).append(',')
+                    .append(decimal(comparison.wilcoxonPValue())).append(',')
+                    .append(comparison.adaptiveWins()).append(',')
+                    .append(comparison.adaptiveLosses()).append(',')
+                    .append(comparison.ties()).append(',')
+                    .append("\"\"")
                     .append('\n');
         }
         return csv.toString();

@@ -323,14 +323,17 @@ export interface ResearchAggregate {
   scenario: string;
   strategy: ResearchStrategy;
   trials: number;
-  meanPrecision: number;
-  meanRecall: number;
-  meanF1: number;
-  f1ConfidenceLow: number;
-  f1ConfidenceHigh: number;
+  meanPrecision: number | null;
+  meanRecall: number | null;
+  meanF1: number | null;
+  f1ConfidenceLow: number | null;
+  f1ConfidenceHigh: number | null;
   meanFalsePositiveEventsPerThousand: number;
-  meanDetectionDelaySamples: number;
-  detectionRate: number;
+  meanDetectionDelaySamples: number | null;
+  detectionRate: number | null;
+  meanSpecificity: number | null;
+  falseAlarmFreeRate: number;
+  meanTimeToFirstFalseAlarmSamples: number | null;
   selectedProfiles: Record<string, number>;
 }
 
@@ -341,13 +344,42 @@ export interface ResearchTrial {
   seed: number;
   noiseMultiplier: number;
   effectMultiplier: number;
-  precision: number;
-  recall: number;
-  f1: number;
+  driftExpected: boolean;
+  precision: number | null;
+  recall: number | null;
+  f1: number | null;
   falsePositiveEvents: number;
   falsePositiveEventsPerThousand: number;
-  detectionDelaySamples: number;
+  detectionDelaySamples: number | null;
+  specificity: number | null;
+  falseAlarmFree: boolean;
+  timeToFirstFalseAlarmSamples: number | null;
   detected: boolean;
+}
+
+export interface ResearchCalibrationSummary {
+  calibrationRepetitions: number;
+  holdoutRepetitions: number;
+  calibrationTrials: number;
+  evaluatedTrials: number;
+  trainingExamples: number;
+  bestGlobalProfile: string;
+  bestProfileLabels: Record<string, number>;
+}
+
+export interface ResearchComparison {
+  scope: string;
+  baselineProfile: string;
+  pairs: number;
+  meanAdaptiveUtility: number;
+  meanBaselineUtility: number;
+  meanDelta: number;
+  confidenceLow: number;
+  confidenceHigh: number;
+  wilcoxonPValue: number;
+  adaptiveWins: number;
+  adaptiveLosses: number;
+  ties: number;
 }
 
 export interface ResearchExperimentReport {
@@ -356,7 +388,9 @@ export interface ResearchExperimentReport {
   completedAt: string;
   request: ResearchExperimentRequest;
   totalTrials: number;
+  calibration: ResearchCalibrationSummary;
   aggregates: ResearchAggregate[];
+  comparisons: ResearchComparison[];
   trials: ResearchTrial[];
 }
 

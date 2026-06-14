@@ -50,9 +50,9 @@ function buildOption(results: ResearchAggregate[]): EChartsOption {
           const result = results.find((candidate) =>
             candidate.scenario === item.name && candidate.strategy === item.seriesName
           );
-          return result
+          return result?.meanF1 != null
             ? `${item.marker} ${item.seriesName}: ${(result.meanF1 * 100).toFixed(1)}% `
-              + `[${(result.f1ConfidenceLow * 100).toFixed(1)}-${(result.f1ConfidenceHigh * 100).toFixed(1)}]`
+              + `[${((result.f1ConfidenceLow ?? 0) * 100).toFixed(1)}-${((result.f1ConfidenceHigh ?? 0) * 100).toFixed(1)}]`
             : "";
         }).join("<br/>");
       }
@@ -72,7 +72,7 @@ function buildOption(results: ResearchAggregate[]): EChartsOption {
       type: "bar",
       name: strategy,
       data: scenarios.map((scenario) =>
-        results.find((result) => result.scenario === scenario && result.strategy === strategy)?.meanF1 ?? 0
+        results.find((result) => result.scenario === scenario && result.strategy === strategy)?.meanF1 ?? null
       ),
       itemStyle: { color: colors[strategy] }
     }))

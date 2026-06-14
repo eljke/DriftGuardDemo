@@ -29,8 +29,10 @@ class ResearchExperimentServiceTest {
             assertEquals(result.totalTrials(), result.completedTrials());
             assertTrue(result.totalTrials() > result.report().totalTrials());
             assertEquals(7, result.completedTrials());
-            assertTrue(service.csv().contains("scenario,strategy,trials"));
+            assertTrue(service.csv().contains("row_type,scope,strategy"));
             assertTrue(service.markdown().contains("# DriftGuard Research Experiment"));
+            assertTrue(service.markdown().contains("Paired adaptive comparison"));
+            assertTrue(service.csv().contains("comparison,ALL,ADAPTIVE"));
         } finally {
             service.close();
         }
