@@ -44,6 +44,8 @@ public class ResearchExperimentEngine {
         for (String scenarioId : request.scenarios()) {
             for (double noiseMultiplier : request.noiseMultipliers()) {
                 for (double effectMultiplier : request.effectMultipliers()) {
+                    List<StreamCharacteristics> cellCharacteristics = new ArrayList<>();
+                    Map<DemoDetectorProfile, Double> cellUtility = new EnumMap<>(DemoDetectorProfile.class);
                     for (int repetition = 0; repetition < request.calibrationRepetitions(); repetition++) {
                         if (cancelled.getAsBoolean()) {
                             throw new CancellationException("Research experiment was cancelled");
@@ -57,6 +59,7 @@ public class ResearchExperimentEngine {
                                 seed
                         );
                         List<ResearchTrial> candidates = new ArrayList<>();
+                        cellCharacteristics.add(StreamCharacteristics.fromBaseline(generated.points()));
                         for (ResearchStrategy strategy : ResearchStrategy.fixed()) {
                             candidates.add(runTrial(
                                     scenarioId,
@@ -71,25 +74,28 @@ public class ResearchExperimentEngine {
                             progress.accept(++completed);
                             calibrationTrials++;
                         }
-                        ResearchTrial best = candidates.stream()
-                                .max(java.util.Comparator.comparingDouble(
-                                        trial -> utility(trial, request.samples())
-                                ))
-                                .orElseThrow();
                         for (ResearchTrial candidate : candidates) {
+                            double trialUtility = utility(candidate, request.samples());
+                            cellUtility.merge(candidate.selectedProfile(), trialUtility, Double::sum);
                             calibrationUtility.merge(
                                     candidate.selectedProfile(),
-                                    utility(candidate, request.samples()),
+                                    trialUtility,
                                     Double::sum
                             );
                             calibrationUtilityCounts.merge(candidate.selectedProfile(), 1, Integer::sum);
                         }
-                        calibrationExamples.add(new CalibrationExample(
-                                StreamCharacteristics.fromBaseline(generated.points()),
-                                best.selectedProfile()
-                        ));
-                        bestProfileLabels.merge(best.selectedProfile().name(), 1, Integer::sum);
                     }
+                    DemoDetectorProfile bestCellProfile = Arrays.stream(DemoDetectorProfile.values())
+                            .max(java.util.Comparator.comparingDouble(cellUtility::get))
+                            .orElseThrow();
+                    cellCharacteristics.forEach(characteristics -> calibrationExamples.add(
+                            new CalibrationExample(characteristics, bestCellProfile)
+                    ));
+                    bestProfileLabels.merge(
+                            bestCellProfile.name(),
+                            cellCharacteristics.size(),
+                            Integer::sum
+                    );
                 }
             }
         }
