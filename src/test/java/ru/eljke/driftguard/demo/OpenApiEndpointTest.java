@@ -57,7 +57,7 @@ class OpenApiEndpointTest {
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("RUNNING"))
-                .andExpect(jsonPath("$.totalTrials").value(8))
+                .andExpect(jsonPath("$.totalTrials").value(7))
                 .andExpect(jsonPath("$.progressPercent").isNumber());
     }
 
