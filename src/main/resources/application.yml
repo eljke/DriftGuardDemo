@@ -46,6 +46,8 @@ driftguard:
     - name: latency-page-hinkley
       enabled: true
       algorithm: page-hinkley
+      profile: adaptive
+      adaptive-calibration-samples: 20
       services: [checkout-service]
       metrics: [latency]
       operations: ["POST /checkout"]
@@ -61,6 +63,8 @@ driftguard:
     - name: error-rate-page-hinkley
       enabled: true
       algorithm: page-hinkley
+      profile: adaptive
+      adaptive-calibration-samples: 20
       services: [checkout-service]
       metrics: [error-rate]
       operations: ["POST /checkout"]
@@ -76,6 +80,8 @@ driftguard:
     - name: throughput-page-hinkley
       enabled: true
       algorithm: page-hinkley
+      profile: adaptive
+      adaptive-calibration-samples: 20
       services: [checkout-service]
       metrics: [throughput]
       operations: ["POST /checkout"]
@@ -92,6 +98,8 @@ driftguard:
     - name: queue-size-page-hinkley
       enabled: true
       algorithm: page-hinkley
+      profile: adaptive
+      adaptive-calibration-samples: 20
       services: [checkout-service]
       metrics: [queue-size]
       operations: ["POST /checkout"]

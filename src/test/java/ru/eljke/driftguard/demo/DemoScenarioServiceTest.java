@@ -93,6 +93,25 @@ class DemoScenarioServiceTest {
         assertEquals(DemoDetectorProfile.BALANCED, runtime.profile());
     }
 
+    @Test
+    void adaptiveProfileReportsSelectedLibraryProfile() {
+        var guard = DemoDetectionRuntime.createGuard(DemoDetectorProfile.ADAPTIVE);
+        MetricScenario scenario = DemoScenarioService.createScenario(
+                "error-rate-spike",
+                "adaptive-runtime",
+                new DemoScenarioRequest(500),
+                42L
+        );
+
+        List<DriftEvent> events = scenario.generate().stream()
+                .flatMap(point -> guard.detect(point).stream())
+                .toList();
+
+        assertFalse(events.isEmpty());
+        assertEquals("ADAPTIVE", events.getFirst().details().get("profileSelection"));
+        assertEquals("AGGRESSIVE", events.getFirst().details().get("selectedProfile"));
+    }
+
     private static DemoScenarioService service() {
         return new DemoScenarioService(
                 new DemoDetectionRuntime(),
