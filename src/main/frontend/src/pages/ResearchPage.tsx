@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Download, FlaskConical, Loader2, Square } from "lucide-react";
+import { CircleHelp, Download, FlaskConical, Loader2, Square } from "lucide-react";
 import { useMemo, useState } from "react";
 import { api } from "../api/client";
 import { MetricCard, Notice, Panel, Progress } from "../components/ui";
@@ -60,8 +60,14 @@ export function ResearchPage({ scenarios }: { scenarios: DemoScenarioDescriptor[
           <FlaskConical size={34} />
         </div>
         <div className="research-hypothesis">
-          <strong>{t("research.hypothesis")}</strong>
-          <span>{report?.hypothesis ?? t("research.hypothesisText")}</span>
+          <div className="research-hypothesis-label">
+            <strong>{t("research.hypothesis")}</strong>
+            <span className="research-tooltip" tabIndex={0}>
+              <CircleHelp aria-label={t("research.hypothesisSimple")} size={16} />
+              <span role="tooltip">{t("research.hypothesisSimple")}</span>
+            </span>
+          </div>
+          <span>{t("research.hypothesisText")}</span>
         </div>
       </Panel>
 
