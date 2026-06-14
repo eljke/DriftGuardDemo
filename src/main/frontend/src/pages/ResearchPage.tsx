@@ -126,7 +126,7 @@ export function ResearchPage({ scenarios }: { scenarios: DemoScenarioDescriptor[
             <MetricCard title={t("research.holdoutTrials")} value={report.totalTrials} helper={`${report.calibration.calibrationTrials} ${t("research.calibrationTrials")}`} />
             <MetricCard
               title={t("research.utilityGain")}
-              value={overallComparison ? signedPercent(overallComparison.relativeImprovementPercent) : "—"}
+              value={overallComparison ? signedPercent(relativeImprovement(overallComparison)) : "—"}
               helper={overallComparison
                 ? `${overallComparison.meanBaselineUtility.toFixed(4)} → ${overallComparison.meanAdaptiveUtility.toFixed(4)}; Δ ${signed(overallComparison.meanDelta)} (${signedPercentagePoints(overallComparison.meanDelta)})`
                 : "—"}
@@ -211,7 +211,7 @@ export function ResearchPage({ scenarios }: { scenarios: DemoScenarioDescriptor[
                       <td>{comparison.baselineProfile}</td>
                       <td>{comparison.pairs}</td>
                       <td>{signed(comparison.meanDelta)}</td>
-                      <td>{signedPercent(comparison.relativeImprovementPercent)}</td>
+                      <td>{signedPercent(relativeImprovement(comparison))}</td>
                       <td>{interval(comparison.confidenceLow, comparison.confidenceHigh)}</td>
                       <td>{formatP(comparison.wilcoxonPValue)}</td>
                       <td>{comparison.adaptiveWins}</td>
@@ -276,6 +276,17 @@ function signedPercent(value: number) {
 function signedPercentagePoints(value: number) {
   const percentagePoints = value * 100;
   return `${percentagePoints >= 0 ? "+" : ""}${percentagePoints.toFixed(2)} p.p.`;
+}
+
+function relativeImprovement(comparison: {
+  meanAdaptiveUtility: number;
+  meanBaselineUtility: number;
+  relativeImprovementPercent?: number;
+}) {
+  return comparison.relativeImprovementPercent
+    ?? (comparison.meanAdaptiveUtility - comparison.meanBaselineUtility)
+      / Math.abs(comparison.meanBaselineUtility)
+      * 100;
 }
 
 function formatP(value: number) {
