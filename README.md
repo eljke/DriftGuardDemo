@@ -29,7 +29,9 @@ The demo also enables DriftGuard's built-in webhook sink. It posts alert JSON to
 
 Synthetic benchmark screens use `driftguard-testkit`: scenarios generate reproducible metric streams, benchmark runners calculate precision/recall and first-detection delay, and reports can be rendered to Markdown for review notes.
 
-`Research Lab` extends this into a reproducible calibration/hold-out experiment. Fixed profiles label calibration streams by multi-objective utility, while a standardized k-NN selector chooses a profile for unseen streams from robust baseline characteristics. Hold-out results include drift and no-drift metrics, paired utility deltas, bootstrap confidence intervals and Wilcoxon signed-rank tests.
+`Research Lab` extends this into a reproducible calibration/hold-out experiment. Fixed profiles label calibration streams by multi-objective utility, while a standardized k-NN selector is passed to DriftGuard's public `AdaptivePageHinkleyConfig` and chooses a profile for unseen streams from robust baseline characteristics. Hold-out results therefore evaluate the same adaptive algorithm and state model available to another application, not a demo-only approximation.
+
+The checkout detectors also demonstrate normal Spring Boot usage with `profile: adaptive` and `adaptive-calibration-samples` in `application.yml`.
 
 The research methodology, hypotheses and validity limitations are documented in [RESEARCH.md](RESEARCH.md).
 
