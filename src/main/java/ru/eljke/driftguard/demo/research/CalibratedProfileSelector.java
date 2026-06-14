@@ -1,6 +1,8 @@
 package ru.eljke.driftguard.demo.research;
 
-import ru.eljke.driftguard.demo.detection.DemoDetectorProfile;
+import ru.eljke.driftguard.algorithms.adaptive.BaselineCharacteristics;
+import ru.eljke.driftguard.algorithms.adaptive.DetectorSensitivityProfile;
+import ru.eljke.driftguard.algorithms.adaptive.PageHinkleyProfileSelector;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -8,7 +10,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-public final class CalibratedProfileSelector {
+public final class CalibratedProfileSelector implements PageHinkleyProfileSelector {
     private static final int NEIGHBORS = 5;
 
     private final List<CalibrationExample> examples;
@@ -40,7 +42,8 @@ public final class CalibratedProfileSelector {
         }
     }
 
-    public DemoDetectorProfile select(StreamCharacteristics characteristics) {
+    @Override
+    public DetectorSensitivityProfile select(BaselineCharacteristics characteristics) {
         double[] target = characteristics.featureVector();
         List<Neighbor> neighbors = examples.stream()
                 .map(example -> new Neighbor(
@@ -50,11 +53,11 @@ public final class CalibratedProfileSelector {
                 .sorted(Comparator.comparingDouble(Neighbor::distance))
                 .limit(Math.min(NEIGHBORS, examples.size()))
                 .toList();
-        Map<DemoDetectorProfile, Double> votes = new EnumMap<>(DemoDetectorProfile.class);
+        Map<DetectorSensitivityProfile, Double> votes = new EnumMap<>(DetectorSensitivityProfile.class);
         for (Neighbor neighbor : neighbors) {
             votes.merge(neighbor.profile(), 1.0 / (neighbor.distance() + 1.0e-9), Double::sum);
         }
-        return Arrays.stream(DemoDetectorProfile.values())
+        return Arrays.stream(DetectorSensitivityProfile.values())
                 .max(Comparator.comparingDouble(profile -> votes.getOrDefault(profile, 0.0)))
                 .orElseThrow();
     }
@@ -67,6 +70,6 @@ public final class CalibratedProfileSelector {
         return Math.sqrt(squared);
     }
 
-    private record Neighbor(DemoDetectorProfile profile, double distance) {
+    private record Neighbor(DetectorSensitivityProfile profile, double distance) {
     }
 }

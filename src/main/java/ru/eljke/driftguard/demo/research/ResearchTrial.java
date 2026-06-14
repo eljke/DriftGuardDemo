@@ -1,11 +1,11 @@
 package ru.eljke.driftguard.demo.research;
 
-import ru.eljke.driftguard.demo.detection.DemoDetectorProfile;
+import ru.eljke.driftguard.algorithms.adaptive.DetectorSensitivityProfile;
 
 public record ResearchTrial(
         String scenario,
         ResearchStrategy strategy,
-        DemoDetectorProfile selectedProfile,
+        DetectorSensitivityProfile selectedProfile,
         long seed,
         double noiseMultiplier,
         double effectMultiplier,

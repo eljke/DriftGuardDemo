@@ -1,10 +1,10 @@
 package ru.eljke.driftguard.demo.research;
 
-import ru.eljke.driftguard.demo.detection.DemoDetectorProfile;
+import ru.eljke.driftguard.algorithms.adaptive.DetectorSensitivityProfile;
 
 public record ResearchComparison(
         String scope,
-        DemoDetectorProfile baselineProfile,
+        DetectorSensitivityProfile baselineProfile,
         int pairs,
         double meanAdaptiveUtility,
         double meanBaselineUtility,

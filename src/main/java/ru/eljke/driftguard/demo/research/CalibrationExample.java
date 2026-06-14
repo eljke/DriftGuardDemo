@@ -1,9 +1,10 @@
 package ru.eljke.driftguard.demo.research;
 
-import ru.eljke.driftguard.demo.detection.DemoDetectorProfile;
+import ru.eljke.driftguard.algorithms.adaptive.BaselineCharacteristics;
+import ru.eljke.driftguard.algorithms.adaptive.DetectorSensitivityProfile;
 
 public record CalibrationExample(
-        StreamCharacteristics characteristics,
-        DemoDetectorProfile bestProfile
+        BaselineCharacteristics characteristics,
+        DetectorSensitivityProfile bestProfile
 ) {
 }

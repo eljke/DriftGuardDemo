@@ -1,6 +1,8 @@
 package ru.eljke.driftguard.demo.research;
 
 import org.springframework.stereotype.Component;
+import ru.eljke.driftguard.algorithms.adaptive.BaselineCharacteristics;
+import ru.eljke.driftguard.algorithms.adaptive.DetectorSensitivityProfile;
 import ru.eljke.driftguard.core.DriftGuard;
 import ru.eljke.driftguard.core.domain.DriftEvent;
 import ru.eljke.driftguard.core.domain.MetricPoint;
@@ -36,16 +38,16 @@ public class ResearchExperimentEngine {
         ResearchExperimentRequest request = rawRequest.normalized();
         List<CalibrationExample> calibrationExamples = new ArrayList<>();
         Map<String, Integer> bestProfileLabels = new LinkedHashMap<>();
-        Map<DemoDetectorProfile, Double> calibrationUtility = new EnumMap<>(DemoDetectorProfile.class);
-        Map<DemoDetectorProfile, Integer> calibrationUtilityCounts = new EnumMap<>(DemoDetectorProfile.class);
+        Map<DetectorSensitivityProfile, Double> calibrationUtility = new EnumMap<>(DetectorSensitivityProfile.class);
+        Map<DetectorSensitivityProfile, Integer> calibrationUtilityCounts = new EnumMap<>(DetectorSensitivityProfile.class);
         int calibrationTrials = 0;
         int completed = 0;
 
         for (String scenarioId : request.scenarios()) {
             for (double noiseMultiplier : request.noiseMultipliers()) {
                 for (double effectMultiplier : request.effectMultipliers()) {
-                    List<StreamCharacteristics> cellCharacteristics = new ArrayList<>();
-                    Map<DemoDetectorProfile, Double> cellUtility = new EnumMap<>(DemoDetectorProfile.class);
+                    List<BaselineCharacteristics> cellCharacteristics = new ArrayList<>();
+                    Map<DetectorSensitivityProfile, Double> cellUtility = new EnumMap<>(DetectorSensitivityProfile.class);
                     for (int repetition = 0; repetition < request.calibrationRepetitions(); repetition++) {
                         if (cancelled.getAsBoolean()) {
                             throw new CancellationException("Research experiment was cancelled");
@@ -59,7 +61,7 @@ public class ResearchExperimentEngine {
                                 seed
                         );
                         List<ResearchTrial> candidates = new ArrayList<>();
-                        cellCharacteristics.add(StreamCharacteristics.fromBaseline(generated.points()));
+                        cellCharacteristics.add(baselineCharacteristics(generated.points()));
                         for (ResearchStrategy strategy : ResearchStrategy.fixed()) {
                             candidates.add(runTrial(
                                     scenarioId,
@@ -67,6 +69,7 @@ public class ResearchExperimentEngine {
                                     generated.points(),
                                     strategy,
                                     strategy.fixedProfile(),
+                                    DemoDetectionRuntime.createGuard(demoProfile(strategy.fixedProfile())),
                                     seed,
                                     noiseMultiplier,
                                     effectMultiplier
@@ -85,7 +88,7 @@ public class ResearchExperimentEngine {
                             calibrationUtilityCounts.merge(candidate.selectedProfile(), 1, Integer::sum);
                         }
                     }
-                    DemoDetectorProfile bestCellProfile = Arrays.stream(DemoDetectorProfile.values())
+                    DetectorSensitivityProfile bestCellProfile = Arrays.stream(DetectorSensitivityProfile.values())
                             .max(java.util.Comparator.comparingDouble(cellUtility::get))
                             .orElseThrow();
                     cellCharacteristics.forEach(characteristics -> calibrationExamples.add(
@@ -100,7 +103,7 @@ public class ResearchExperimentEngine {
             }
         }
 
-        DemoDetectorProfile bestGlobalProfile = Arrays.stream(DemoDetectorProfile.values())
+        DetectorSensitivityProfile bestGlobalProfile = Arrays.stream(DetectorSensitivityProfile.values())
                 .max(java.util.Comparator.comparingDouble(profile ->
                         calibrationUtility.get(profile) / calibrationUtilityCounts.get(profile)
                 ))
@@ -122,17 +125,24 @@ public class ResearchExperimentEngine {
                                 request.samples(),
                                 seed
                         );
-                        StreamCharacteristics characteristics = StreamCharacteristics.fromBaseline(generated.points());
+                        BaselineCharacteristics characteristics = baselineCharacteristics(generated.points());
                         for (ResearchStrategy strategy : ResearchStrategy.values()) {
-                            DemoDetectorProfile profile = strategy == ResearchStrategy.ADAPTIVE
+                            DetectorSensitivityProfile profile = strategy == ResearchStrategy.ADAPTIVE
                                     ? selector.select(characteristics)
                                     : strategy.fixedProfile();
+                            DriftGuard guard = strategy == ResearchStrategy.ADAPTIVE
+                                    ? DemoDetectionRuntime.createAdaptiveGuard(
+                                            selector,
+                                            baselineSampleCount(generated.points())
+                                    )
+                                    : DemoDetectionRuntime.createGuard(demoProfile(profile));
                             trials.add(runTrial(
                                     scenarioId,
                                     generated.scenario(),
                                     generated.points(),
                                     strategy,
                                     profile,
+                                    guard,
                                     seed,
                                     noiseMultiplier,
                                     effectMultiplier
@@ -186,12 +196,12 @@ public class ResearchExperimentEngine {
             MetricScenario scenario,
             List<MetricPoint> points,
             ResearchStrategy strategy,
-            DemoDetectorProfile profile,
+            DetectorSensitivityProfile profile,
+            DriftGuard guard,
             long seed,
             double noiseMultiplier,
             double effectMultiplier
     ) {
-        DriftGuard guard = DemoDetectionRuntime.createGuard(profile);
         List<DriftEvent> events = points.stream()
                 .flatMap(point -> guard.detect(point).stream())
                 .toList();
@@ -318,7 +328,7 @@ public class ResearchExperimentEngine {
 
     private static List<ResearchComparison> comparisons(
             List<ResearchTrial> trials,
-            DemoDetectorProfile baselineProfile,
+            DetectorSensitivityProfile baselineProfile,
             int samples,
             long baseSeed
     ) {
@@ -340,7 +350,7 @@ public class ResearchExperimentEngine {
     private static ResearchComparison comparison(
             String scope,
             List<ResearchTrial> trials,
-            DemoDetectorProfile baselineProfile,
+            DetectorSensitivityProfile baselineProfile,
             int samples,
             long bootstrapSeed
     ) {
@@ -403,6 +413,20 @@ public class ResearchExperimentEngine {
             );
             default -> throw new IllegalArgumentException("Unsupported research scenario: " + scenarioId);
         };
+    }
+
+    private static BaselineCharacteristics baselineCharacteristics(List<MetricPoint> points) {
+        return BaselineCharacteristics.from(points.subList(0, baselineSampleCount(points)).stream()
+                .map(MetricPoint::value)
+                .toList());
+    }
+
+    private static int baselineSampleCount(List<MetricPoint> points) {
+        return Math.max(8, Math.min(points.size(), points.size() / 4));
+    }
+
+    private static DemoDetectorProfile demoProfile(DetectorSensitivityProfile profile) {
+        return DemoDetectorProfile.valueOf(profile.name());
     }
 
     private record GeneratedScenario(MetricScenario scenario, List<MetricPoint> points) {

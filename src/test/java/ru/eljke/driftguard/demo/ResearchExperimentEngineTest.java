@@ -1,12 +1,12 @@
 package ru.eljke.driftguard.demo;
 
 import org.junit.jupiter.api.Test;
-import ru.eljke.driftguard.demo.detection.DemoDetectorProfile;
+import ru.eljke.driftguard.algorithms.adaptive.BaselineCharacteristics;
+import ru.eljke.driftguard.algorithms.adaptive.DetectorSensitivityProfile;
 import ru.eljke.driftguard.demo.research.ResearchExperimentEngine;
 import ru.eljke.driftguard.demo.research.ResearchExperimentRequest;
 import ru.eljke.driftguard.demo.research.ResearchExperimentReport;
 import ru.eljke.driftguard.demo.research.ResearchStrategy;
-import ru.eljke.driftguard.demo.research.StreamCharacteristics;
 
 import java.util.List;
 
@@ -60,27 +60,27 @@ class ResearchExperimentEngineTest {
 
     @Test
     void calibratedSelectorUsesNearestRobustBaseline() {
-        StreamCharacteristics errorRate = characteristics(0.01, 0.002, 0.2, 0.1, 0.12, 0.0, 0.0);
-        StreamCharacteristics latency = characteristics(100.0, 4.0, 0.04, 0.1, 0.03, 0.0, 0.0);
-        StreamCharacteristics throughput = characteristics(1_000.0, 18.0, 0.018, 0.1, 0.01, 0.0, 0.0);
+        BaselineCharacteristics errorRate = characteristics(0.01, 0.002, 0.2, 0.1, 0.12, 0.0, 0.0);
+        BaselineCharacteristics latency = characteristics(100.0, 4.0, 0.04, 0.1, 0.03, 0.0, 0.0);
+        BaselineCharacteristics throughput = characteristics(1_000.0, 18.0, 0.018, 0.1, 0.01, 0.0, 0.0);
         var selector = new ru.eljke.driftguard.demo.research.CalibratedProfileSelector(List.of(
                 new ru.eljke.driftguard.demo.research.CalibrationExample(
-                        errorRate, DemoDetectorProfile.AGGRESSIVE
+                        errorRate, DetectorSensitivityProfile.AGGRESSIVE
                 ),
                 new ru.eljke.driftguard.demo.research.CalibrationExample(
-                        latency, DemoDetectorProfile.CONSERVATIVE
+                        latency, DetectorSensitivityProfile.CONSERVATIVE
                 ),
                 new ru.eljke.driftguard.demo.research.CalibrationExample(
-                        throughput, DemoDetectorProfile.CONSERVATIVE
+                        throughput, DetectorSensitivityProfile.CONSERVATIVE
                 )
         ));
 
         assertEquals(
-                DemoDetectorProfile.AGGRESSIVE,
+                DetectorSensitivityProfile.AGGRESSIVE,
                 selector.select(characteristics(0.011, 0.0021, 0.19, 0.11, 0.11, 0.0, 0.0))
         );
         assertEquals(
-                DemoDetectorProfile.CONSERVATIVE,
+                DetectorSensitivityProfile.CONSERVATIVE,
                 selector.select(characteristics(950.0, 17.0, 0.018, 0.09, 0.01, 0.0, 0.0))
         );
     }
@@ -100,7 +100,7 @@ class ResearchExperimentEngineTest {
         assertFalse(first.trials().isEmpty());
     }
 
-    private static StreamCharacteristics characteristics(
+    private static BaselineCharacteristics characteristics(
             double mean,
             double standardDeviation,
             double coefficientOfVariation,
@@ -109,7 +109,7 @@ class ResearchExperimentEngineTest {
             double trend,
             double outlierRate
     ) {
-        return new StreamCharacteristics(
+        return new BaselineCharacteristics(
                 mean,
                 standardDeviation,
                 coefficientOfVariation,

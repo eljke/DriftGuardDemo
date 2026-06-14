@@ -1,6 +1,6 @@
 package ru.eljke.driftguard.demo.research;
 
-import ru.eljke.driftguard.demo.detection.DemoDetectorProfile;
+import ru.eljke.driftguard.algorithms.adaptive.DetectorSensitivityProfile;
 
 import java.util.Map;
 
@@ -10,7 +10,7 @@ public record ResearchCalibrationSummary(
         int calibrationTrials,
         int evaluatedTrials,
         int trainingExamples,
-        DemoDetectorProfile bestGlobalProfile,
+        DetectorSensitivityProfile bestGlobalProfile,
         Map<String, Integer> bestProfileLabels
 ) {
 }

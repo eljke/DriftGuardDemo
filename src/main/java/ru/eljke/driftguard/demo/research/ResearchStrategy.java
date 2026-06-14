@@ -1,20 +1,20 @@
 package ru.eljke.driftguard.demo.research;
 
-import ru.eljke.driftguard.demo.detection.DemoDetectorProfile;
+import ru.eljke.driftguard.algorithms.adaptive.DetectorSensitivityProfile;
 
 public enum ResearchStrategy {
-    AGGRESSIVE(DemoDetectorProfile.AGGRESSIVE),
-    BALANCED(DemoDetectorProfile.BALANCED),
-    CONSERVATIVE(DemoDetectorProfile.CONSERVATIVE),
+    AGGRESSIVE(DetectorSensitivityProfile.AGGRESSIVE),
+    BALANCED(DetectorSensitivityProfile.BALANCED),
+    CONSERVATIVE(DetectorSensitivityProfile.CONSERVATIVE),
     ADAPTIVE(null);
 
-    private final DemoDetectorProfile fixedProfile;
+    private final DetectorSensitivityProfile fixedProfile;
 
-    ResearchStrategy(DemoDetectorProfile fixedProfile) {
+    ResearchStrategy(DetectorSensitivityProfile fixedProfile) {
         this.fixedProfile = fixedProfile;
     }
 
-    public DemoDetectorProfile fixedProfile() {
+    public DetectorSensitivityProfile fixedProfile() {
         if (fixedProfile == null) {
             throw new IllegalStateException("Adaptive strategy requires a calibrated selector");
         }
