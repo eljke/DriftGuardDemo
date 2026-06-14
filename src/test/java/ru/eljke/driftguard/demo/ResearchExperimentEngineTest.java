@@ -35,6 +35,12 @@ class ResearchExperimentEngineTest {
         assertEquals(2, report.calibration().trainingExamples());
         assertEquals(3, report.comparisons().size());
         assertEquals(2, report.comparisons().getFirst().pairs());
+        var overall = report.comparisons().getFirst();
+        assertEquals(
+                overall.meanDelta() / overall.meanBaselineUtility() * 100.0,
+                overall.relativeImprovementPercent(),
+                1.0e-12
+        );
         assertTrue(report.aggregates().stream().allMatch(result -> result.trials() == 1));
         assertTrue(report.aggregates().stream()
                 .filter(result -> result.meanF1() != null)

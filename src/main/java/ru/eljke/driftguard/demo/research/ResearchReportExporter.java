@@ -12,7 +12,7 @@ public final class ResearchReportExporter {
         csv.append("row_type,scope,strategy,baseline_profile,trials_or_pairs,precision,recall,f1,f1_ci_low,f1_ci_high,")
                 .append("false_positives_per_1000,delay_samples,detection_rate,specificity,")
                 .append("false_alarm_free_rate,mean_time_to_false_alarm_samples,mean_delta,delta_ci_low,")
-                .append("delta_ci_high,wilcoxon_p,wins,losses,ties,selected_profiles\n");
+                .append("delta_ci_high,relative_improvement_percent,wilcoxon_p,wins,losses,ties,selected_profiles\n");
         for (ResearchAggregate result : report.aggregates()) {
             csv.append("aggregate,")
                     .append(result.scenario()).append(',')
@@ -44,6 +44,7 @@ public final class ResearchReportExporter {
                     .append(decimal(comparison.meanDelta())).append(',')
                     .append(decimal(comparison.confidenceLow())).append(',')
                     .append(decimal(comparison.confidenceHigh())).append(',')
+                    .append(decimal(comparison.relativeImprovementPercent())).append(',')
                     .append(decimal(comparison.wilcoxonPValue())).append(',')
                     .append(comparison.adaptiveWins()).append(',')
                     .append(comparison.adaptiveLosses()).append(',')
@@ -88,13 +89,16 @@ public final class ResearchReportExporter {
                     .append(" |\n");
         }
         markdown.append("\n## Paired adaptive comparison\n\n")
-                .append("| Scope | Baseline | Pairs | Mean delta | Bootstrap 95% CI | Wilcoxon p | Wins | Losses | Ties |\n")
-                .append("|---|---|---:|---:|---:|---:|---:|---:|---:|\n");
+                .append("| Scope | Baseline | Pairs | Baseline utility | Adaptive utility | Mean delta | Relative improvement | Bootstrap 95% CI | Wilcoxon p | Wins | Losses | Ties |\n")
+                .append("|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|\n");
         for (ResearchComparison comparison : report.comparisons()) {
             markdown.append("| ").append(comparison.scope())
                     .append(" | ").append(comparison.baselineProfile())
                     .append(" | ").append(comparison.pairs())
+                    .append(" | ").append(decimal(comparison.meanBaselineUtility()))
+                    .append(" | ").append(decimal(comparison.meanAdaptiveUtility()))
                     .append(" | ").append(decimal(comparison.meanDelta()))
+                    .append(" | ").append(decimal(comparison.relativeImprovementPercent())).append("%")
                     .append(" | ").append(decimal(comparison.confidenceLow()))
                     .append("-").append(decimal(comparison.confidenceHigh()))
                     .append(" | ").append(decimal(comparison.wilcoxonPValue()))

@@ -374,6 +374,7 @@ export interface ResearchComparison {
   meanAdaptiveUtility: number;
   meanBaselineUtility: number;
   meanDelta: number;
+  relativeImprovementPercent: number;
   confidenceLow: number;
   confidenceHigh: number;
   wilcoxonPValue: number;

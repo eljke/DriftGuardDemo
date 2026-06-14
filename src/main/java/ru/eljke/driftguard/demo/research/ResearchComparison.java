@@ -9,6 +9,7 @@ public record ResearchComparison(
         double meanAdaptiveUtility,
         double meanBaselineUtility,
         double meanDelta,
+        double relativeImprovementPercent,
         double confidenceLow,
         double confidenceHigh,
         double wilcoxonPValue,

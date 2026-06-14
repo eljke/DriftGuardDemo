@@ -124,7 +124,13 @@ export function ResearchPage({ scenarios }: { scenarios: DemoScenarioDescriptor[
         <>
           <div className="summary-grid">
             <MetricCard title={t("research.holdoutTrials")} value={report.totalTrials} helper={`${report.calibration.calibrationTrials} ${t("research.calibrationTrials")}`} />
-            <MetricCard title={t("research.utilityDelta")} value={overallComparison ? signed(overallComparison.meanDelta) : "—"} helper={overallComparison ? `95% CI ${interval(overallComparison.confidenceLow, overallComparison.confidenceHigh)}` : "—"} />
+            <MetricCard
+              title={t("research.utilityGain")}
+              value={overallComparison ? signedPercent(overallComparison.relativeImprovementPercent) : "—"}
+              helper={overallComparison
+                ? `${overallComparison.meanBaselineUtility.toFixed(4)} → ${overallComparison.meanAdaptiveUtility.toFixed(4)}; Δ ${signed(overallComparison.meanDelta)} (${signedPercentagePoints(overallComparison.meanDelta)})`
+                : "—"}
+            />
             <MetricCard title={t("research.significance")} value={overallComparison ? formatP(overallComparison.wilcoxonPValue) : "—"} helper={overallComparison && overallComparison.wilcoxonPValue < 0.05 ? t("research.significant") : t("research.notSignificant")} />
             <MetricCard title={t("research.baseline")} value={report.calibration.bestGlobalProfile} helper={`${report.calibration.calibrationRepetitions}/${report.calibration.holdoutRepetitions} ${t("research.split")}`} />
           </div>
@@ -190,6 +196,7 @@ export function ResearchPage({ scenarios }: { scenarios: DemoScenarioDescriptor[
                     <th>{t("research.baseline")}</th>
                     <th>{t("research.pairs")}</th>
                     <th>Δ utility</th>
+                    <th>{t("research.relativeGain")}</th>
                     <th>Bootstrap 95% CI</th>
                     <th>Wilcoxon p</th>
                     <th>{t("research.wins")}</th>
@@ -204,6 +211,7 @@ export function ResearchPage({ scenarios }: { scenarios: DemoScenarioDescriptor[
                       <td>{comparison.baselineProfile}</td>
                       <td>{comparison.pairs}</td>
                       <td>{signed(comparison.meanDelta)}</td>
+                      <td>{signedPercent(comparison.relativeImprovementPercent)}</td>
                       <td>{interval(comparison.confidenceLow, comparison.confidenceHigh)}</td>
                       <td>{formatP(comparison.wilcoxonPValue)}</td>
                       <td>{comparison.adaptiveWins}</td>
@@ -259,6 +267,15 @@ function percentInterval(low: number | null, high: number | null) {
 
 function signed(value: number) {
   return `${value >= 0 ? "+" : ""}${value.toFixed(4)}`;
+}
+
+function signedPercent(value: number) {
+  return `${value >= 0 ? "+" : ""}${value.toFixed(2)}%`;
+}
+
+function signedPercentagePoints(value: number) {
+  const percentagePoints = value * 100;
+  return `${percentagePoints >= 0 ? "+" : ""}${percentagePoints.toFixed(2)} p.p.`;
 }
 
 function formatP(value: number) {

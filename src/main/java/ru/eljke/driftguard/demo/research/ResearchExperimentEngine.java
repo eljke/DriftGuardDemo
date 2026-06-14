@@ -380,6 +380,10 @@ public class ResearchExperimentEngine {
                 Arrays.stream(adaptiveUtility).average().orElseThrow(),
                 Arrays.stream(baselineUtility).average().orElseThrow(),
                 statistics.mean(),
+                relativeImprovementPercent(
+                        Arrays.stream(adaptiveUtility).average().orElseThrow(),
+                        Arrays.stream(baselineUtility).average().orElseThrow()
+                ),
                 statistics.confidenceLow(),
                 statistics.confidenceHigh(),
                 statistics.pValue(),
@@ -387,6 +391,10 @@ public class ResearchExperimentEngine {
                 statistics.losses(),
                 statistics.ties()
         );
+    }
+
+    private static double relativeImprovementPercent(double adaptiveUtility, double baselineUtility) {
+        return (adaptiveUtility - baselineUtility) / Math.abs(baselineUtility) * 100.0;
     }
 
     private static DemoScenarioRequest scenarioRequest(
