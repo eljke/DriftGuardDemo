@@ -17,11 +17,16 @@ export function ConfigurationPage({ configuration }: { configuration?: DemoConfi
   if (!configuration) {
     return <Panel title={t("configuration.title")}>{t("common.loadingConfiguration")}</Panel>;
   }
+  const activeProfile = configuration.aggressiveness.level.toUpperCase();
 
   return (
     <section className="stack">
       <div className="page-grid">
-        <MetricCard title={t("configuration.aggressiveness")} value={configuration.aggressiveness.level} helper={configuration.aggressiveness.description} />
+        <MetricCard
+          title={t("configuration.aggressiveness")}
+          value={t(`configuration.profile.${activeProfile.toLowerCase()}`)}
+          helper={t(`configuration.profileDescription.${activeProfile.toLowerCase()}`)}
+        />
         <MetricCard title={t("configuration.kafkaInput")} value={configuration.kafka.inputTopic} helper={configuration.kafka.bootstrapServers} />
         <MetricCard title={t("configuration.kafkaOutput")} value={configuration.kafka.outputTopic} helper={configuration.kafka.applicationId} />
         <MetricCard title={t("configuration.playback")} value={configuration.kafka.playbackInterval} helper={t("configuration.playbackHelper")} />
@@ -41,7 +46,7 @@ export function ConfigurationPage({ configuration }: { configuration?: DemoConfi
         {updateProfile.error && <Notice tone="error" text={readableError(updateProfile.error)} />}
         <div className="actions">
           {configuration.availableProfiles.map((profile) => {
-            const active = configuration.aggressiveness.level.toUpperCase() === profile;
+            const active = activeProfile === profile;
             return (
               <button
                 className={active ? "primary-button" : "secondary-button"}
@@ -51,7 +56,7 @@ export function ConfigurationPage({ configuration }: { configuration?: DemoConfi
                 type="button"
               >
                 {updateProfile.isPending ? <Loader2 className="spin" size={16} /> : null}
-                {profile}
+                {t(`configuration.profile.${profile.toLowerCase()}`)}
               </button>
             );
           })}
@@ -85,6 +90,12 @@ export function ConfigurationPage({ configuration }: { configuration?: DemoConfi
                     recovery: detector.emissionPolicy.recoveryConsecutiveNormal
                   })}
                 </dd>
+                {detector.algorithm === "adaptive-page-hinkley" && (
+                  <>
+                    <dt>{t("configuration.calibration")}</dt>
+                    <dd>{detector.warmupSamples} {t("configuration.samples")}</dd>
+                  </>
+                )}
               </dl>
             </article>
           ))}

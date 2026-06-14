@@ -2,6 +2,7 @@ package ru.eljke.driftguard.demo.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.eljke.driftguard.algorithms.adaptive.AdaptivePageHinkleyConfig;
 import ru.eljke.driftguard.algorithms.ks.KsConfig;
 import ru.eljke.driftguard.algorithms.pagehinkley.PageHinkleyConfig;
 import ru.eljke.driftguard.core.config.DetectorDefinition;
@@ -29,7 +30,7 @@ public class DemoConfigurationService {
                 .toList();
         return new DemoConfigurationView(
                 aggressiveness(),
-                List.of("AGGRESSIVE", "BALANCED", "CONSERVATIVE"),
+                java.util.Arrays.stream(DemoDetectorProfile.values()).map(Enum::name).toList(),
                 detectorRegistry.algorithmNames().stream().sorted().toList(),
                 kafkaView(),
                 detectors
@@ -63,6 +64,11 @@ public class DemoConfigurationService {
             warningThreshold = config.warningThreshold();
             criticalThreshold = config.criticalThreshold();
             warmupSamples = config.warmupSamples();
+        }
+        if (definition.config() instanceof AdaptivePageHinkleyConfig config) {
+            warningThreshold = config.balanced().warningThreshold();
+            criticalThreshold = config.balanced().criticalThreshold();
+            warmupSamples = config.calibrationSamples();
         }
         if (definition.config() instanceof KsConfig config) {
             warningPValue = config.warningPValue();
