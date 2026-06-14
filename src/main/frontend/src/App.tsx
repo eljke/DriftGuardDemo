@@ -6,6 +6,7 @@ import { ApiStatusBanner } from "./components/ui";
 import { KafkaPage } from "./features/kafka/KafkaPage";
 import { ConfigurationPage } from "./pages/ConfigurationPage";
 import { OverviewPage } from "./pages/OverviewPage";
+import { ResearchPage } from "./pages/ResearchPage";
 import { ServicePage } from "./pages/ServicePage";
 import { SyntheticPage } from "./pages/SyntheticPage";
 import { ToolsPage } from "./pages/ToolsPage";
@@ -53,6 +54,7 @@ export default function App() {
       {page === "overview" && <OverviewPage result={overview.data} kafka={kafka.data} storedEvents={storedEvents.data ?? []} capabilities={capabilities.data ?? []} />}
       {page === "synthetic" && <SyntheticPage result={overview.data} scenarios={scenarios.data ?? []} />}
       {page === "kafka" && <KafkaPage status={kafka.data} operations={kafkaOperations.data} scenarios={scenarios.data ?? []} configuration={configuration.data} />}
+      {page === "research" && <ResearchPage scenarios={scenarios.data ?? []} />}
       {page === "configuration" && <ConfigurationPage configuration={configuration.data} />}
       {page === "tools" && <ToolsPage endpoints={help.data ?? {}} tools={tools.data ?? []} />}
     </AppShell>

@@ -2027,6 +2027,128 @@ th {
     }
 }
 
+.research-intro {
+    border-top: 3px solid #059669;
+}
+
+.research-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.research-heading h3 {
+    margin: 4px 0 8px;
+    font-size: 24px;
+}
+
+.research-heading p:last-child,
+.research-hypothesis span {
+    color: var(--muted);
+    line-height: 1.55;
+}
+
+.research-heading > svg {
+    color: #059669;
+    flex: 0 0 auto;
+}
+
+.research-hypothesis {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 14px;
+    margin-top: 18px;
+    padding: 14px;
+    border: 1px solid #a7f3d0;
+    border-radius: 8px;
+    background: #ecfdf5;
+}
+
+.research-controls {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.research-scenarios {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 16px 0 10px;
+}
+
+.research-scenarios label {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 10px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: var(--surface-muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.research-progress {
+    margin-top: 16px;
+}
+
+.research-chart {
+    width: 100%;
+    height: 420px;
+}
+
+.research-strategy {
+    display: inline-flex;
+    padding: 4px 7px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.research-strategy.aggressive {
+    color: #991b1b;
+    background: #fee2e2;
+}
+
+.research-strategy.balanced {
+    color: #1d4ed8;
+    background: #dbeafe;
+}
+
+.research-strategy.conservative {
+    color: #475569;
+    background: #e2e8f0;
+}
+
+.research-strategy.adaptive {
+    color: #047857;
+    background: #d1fae5;
+}
+
+.research-exports {
+    margin-top: 14px;
+}
+
+.research-exports a {
+    text-decoration: none;
+}
+
+@media (max-width: 760px) {
+    .research-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .research-hypothesis {
+        grid-template-columns: 1fr;
+    }
+
+    .research-chart {
+        height: 340px;
+    }
+}
+
 .api-status-head {
     display: flex;
     align-items: flex-start;

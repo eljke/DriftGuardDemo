@@ -306,3 +306,68 @@ export interface DetectorConfigurationView {
   };
   sensitivity: string;
 }
+
+export type ResearchStrategy = "AGGRESSIVE" | "BALANCED" | "CONSERVATIVE" | "ADAPTIVE";
+export type ResearchJobStatus = "IDLE" | "RUNNING" | "COMPLETED" | "CANCELLED" | "FAILED";
+
+export interface ResearchExperimentRequest {
+  repetitions: number;
+  samples: number;
+  baseSeed: number;
+  scenarios: string[];
+  noiseMultipliers: number[];
+  effectMultipliers: number[];
+}
+
+export interface ResearchAggregate {
+  scenario: string;
+  strategy: ResearchStrategy;
+  trials: number;
+  meanPrecision: number;
+  meanRecall: number;
+  meanF1: number;
+  f1ConfidenceLow: number;
+  f1ConfidenceHigh: number;
+  meanFalsePositiveEventsPerThousand: number;
+  meanDetectionDelaySamples: number;
+  detectionRate: number;
+  selectedProfiles: Record<string, number>;
+}
+
+export interface ResearchTrial {
+  scenario: string;
+  strategy: ResearchStrategy;
+  selectedProfile: string;
+  seed: number;
+  noiseMultiplier: number;
+  effectMultiplier: number;
+  precision: number;
+  recall: number;
+  f1: number;
+  falsePositiveEvents: number;
+  falsePositiveEventsPerThousand: number;
+  detectionDelaySamples: number;
+  detected: boolean;
+}
+
+export interface ResearchExperimentReport {
+  hypothesis: string;
+  method: string;
+  completedAt: string;
+  request: ResearchExperimentRequest;
+  totalTrials: number;
+  aggregates: ResearchAggregate[];
+  trials: ResearchTrial[];
+}
+
+export interface ResearchJobSnapshot {
+  jobId?: string;
+  status: ResearchJobStatus;
+  completedTrials: number;
+  totalTrials: number;
+  progressPercent: number;
+  startedAt?: string;
+  finishedAt?: string;
+  error?: string;
+  report?: ResearchExperimentReport;
+}

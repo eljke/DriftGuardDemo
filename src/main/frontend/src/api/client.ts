@@ -17,6 +17,8 @@ import type {
   KafkaDemoStatus,
   KafkaOperationsSnapshot,
   KafkaReplayRequest,
+  ResearchExperimentRequest,
+  ResearchJobSnapshot,
   ToolLink
 } from "../types";
 
@@ -100,5 +102,11 @@ export const api = {
     help: () => request<DemoHelp>("/api/demo/help"),
     capabilities: () => request<DemoCapabilityGroup[]>("/api/demo/capabilities"),
     configuration: () => request<DemoConfigurationView>("/api/demo/configuration"),
-    updateProfile: (profile: string) => request<DemoConfigurationView>(`/api/demo/configuration/profile/${profile}`, {method: "POST"})
+    updateProfile: (profile: string) => request<DemoConfigurationView>(`/api/demo/configuration/profile/${profile}`, {method: "POST"}),
+    research: () => request<ResearchJobSnapshot>("/api/research"),
+    startResearch: (body: ResearchExperimentRequest) => request<ResearchJobSnapshot>("/api/research", {
+        method: "POST",
+        body: JSON.stringify(body)
+    }),
+    cancelResearch: () => request<ResearchJobSnapshot>("/api/research/cancel", { method: "POST" })
 };

@@ -1,5 +1,7 @@
 package ru.eljke.driftguard.demo.research;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.time.Instant;
 
 public record ResearchJobSnapshot(
@@ -12,6 +14,7 @@ public record ResearchJobSnapshot(
         String error,
         ResearchExperimentReport report
 ) {
+    @JsonProperty
     public double progressPercent() {
         return totalTrials == 0 ? 0.0 : completedTrials * 100.0 / totalTrials;
     }

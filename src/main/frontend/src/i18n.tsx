@@ -12,6 +12,7 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     "nav.overview": "Overview",
     "nav.synthetic": "Synthetic",
     "nav.kafka": "Kafka Service",
+    "nav.research": "Research Lab",
     "nav.configuration": "Configuration",
     "nav.tools": "Tools",
     "status.synthetic": "Synthetic",
@@ -290,6 +291,33 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     "drift.statisticLabel": "Statistic",
     "drift.signals": "Signals",
     "drift.recoveryNormals": "Recovery normals"
+    ,"research.title": "Research Lab"
+    ,"research.eyebrow": "Reproducible experiment"
+    ,"research.heading": "Adaptive detector-profile selection"
+    ,"research.description": "Run paired trials across drift types, noise levels, effect sizes and random seeds. The adaptive strategy uses baseline statistics only."
+    ,"research.hypothesis": "Hypothesis"
+    ,"research.hypothesisText": "Baseline-aware profile selection improves the F1-delay trade-off over fixed sensitivity profiles."
+    ,"research.matrix": "Experiment matrix"
+    ,"research.repetitions": "Repetitions"
+    ,"research.samples": "Samples per stream"
+    ,"research.seed": "Base seed"
+    ,"research.matrixHelp": "Each strategy receives identical generated streams. Defaults combine 5 scenarios, 3 noise levels, 3 effect sizes and 10 seeds."
+    ,"research.run": "Run experiment"
+    ,"research.cancel": "Cancel"
+    ,"research.trials": "Trials"
+    ,"research.paired": "Paired deterministic runs"
+    ,"research.bestF1": "Best mean F1"
+    ,"research.adaptiveWins": "Adaptive wins"
+    ,"research.scenarioCount": "Scenarios where adaptive has the highest F1"
+    ,"research.completed": "Completed"
+    ,"research.reproducible": "Seed and matrix are stored in the report"
+    ,"research.f1Chart": "F1 by scenario and strategy"
+    ,"research.ciHelp": "Tooltips show normal-approximation 95% confidence intervals across paired repetitions."
+    ,"research.results": "Aggregated results"
+    ,"research.scenario": "Scenario"
+    ,"research.strategy": "Strategy"
+    ,"research.delay": "Delay, samples"
+    ,"research.profileChoice": "Selected profiles"
   },
   ru: {
     "app.subtitle": "обнаружение drift-а в потоках",
@@ -300,6 +328,7 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     "nav.overview": "Обзор",
     "nav.synthetic": "Синтетика",
     "nav.kafka": "Kafka Service",
+    "nav.research": "Research Lab",
     "nav.configuration": "Конфигурация",
     "nav.tools": "Инструменты",
     "status.synthetic": "Синтетика",
@@ -578,6 +607,33 @@ const dictionaries: Record<Locale, Record<string, string>> = {
     "drift.statisticLabel": "Статистика",
     "drift.signals": "Сигналы",
     "drift.recoveryNormals": "Нормальные recovery"
+    ,"research.title": "Research Lab"
+    ,"research.eyebrow": "Воспроизводимый эксперимент"
+    ,"research.heading": "Адаптивный выбор профиля детектора"
+    ,"research.description": "Парные испытания по типам drift-а, уровням шума, величине эффекта и seeds. Адаптивная стратегия использует только статистики baseline."
+    ,"research.hypothesis": "Гипотеза"
+    ,"research.hypothesisText": "Выбор профиля по характеристикам baseline улучшает компромисс F1 и задержки по сравнению с фиксированными профилями."
+    ,"research.matrix": "Матрица эксперимента"
+    ,"research.repetitions": "Повторения"
+    ,"research.samples": "Точек в потоке"
+    ,"research.seed": "Начальный seed"
+    ,"research.matrixHelp": "Все стратегии получают одинаковые потоки. По умолчанию: 5 сценариев, 3 уровня шума, 3 величины эффекта и 10 seeds."
+    ,"research.run": "Запустить эксперимент"
+    ,"research.cancel": "Отменить"
+    ,"research.trials": "Испытания"
+    ,"research.paired": "Парные детерминированные запуски"
+    ,"research.bestF1": "Лучший средний F1"
+    ,"research.adaptiveWins": "Победы adaptive"
+    ,"research.scenarioCount": "Сценарии, где adaptive имеет максимальный F1"
+    ,"research.completed": "Завершено"
+    ,"research.reproducible": "Seed и матрица сохранены в отчёте"
+    ,"research.f1Chart": "F1 по сценариям и стратегиям"
+    ,"research.ciHelp": "Tooltip показывает 95% доверительный интервал по парным повторениям."
+    ,"research.results": "Агрегированные результаты"
+    ,"research.scenario": "Сценарий"
+    ,"research.strategy": "Стратегия"
+    ,"research.delay": "Задержка, samples"
+    ,"research.profileChoice": "Выбранные профили"
   }
 };
 
