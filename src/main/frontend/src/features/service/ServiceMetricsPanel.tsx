@@ -158,7 +158,7 @@ function groupByOperation(operations: CheckoutOperationResult[]) {
 }
 
 function metricRank(metric: string) {
-  return ["latency", "error-rate", "throughput", "queue-size"].indexOf(metric);
+  return ["latency", "error-rate", "throughput", "queue-size", "queue-size-micrometer"].indexOf(metric);
 }
 
 function metricLabel(metric: string, t: (key: string) => string) {

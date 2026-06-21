@@ -1,8 +1,10 @@
 package ru.eljke.driftguard.demo.service;
 
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -63,9 +65,18 @@ public class CheckoutService {
     private final List<MetricPoint> recentMetrics = new CopyOnWriteArrayList<>();
     private volatile ScheduledFuture<?> trafficTask;
     private volatile CheckoutMode mode = CheckoutMode.NORMAL;
-    private double queueSize = 12.0;
+    private volatile double queueSize = 12.0;
     private long successes;
     private long failures;
+
+    @PostConstruct
+    void registerMicrometerMeters() {
+        Gauge.builder("checkout.queue.size", this, CheckoutService::currentQueueSize)
+                .description("Current checkout backlog size sampled by DriftGuard Micrometer input")
+                .tag("operation", DETECTOR_OPERATION)
+                .tag("component", "checkout")
+                .register(meterRegistry);
+    }
 
     public synchronized CheckoutServiceSnapshot snapshot() {
         List<CheckoutOperationResult> operations = latest(recentOperations, 40);
@@ -170,6 +181,10 @@ public class CheckoutService {
 
     public List<String> operations() {
         return OPERATIONS;
+    }
+
+    public double currentQueueSize() {
+        return queueSize;
     }
 
     @PreDestroy

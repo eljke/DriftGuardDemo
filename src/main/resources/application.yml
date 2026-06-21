@@ -41,6 +41,20 @@ driftguard:
     output-topic: driftguard.demo.drift-events
     auto-startup: false
     state-dir: ./target/driftguard-demo-kafka-state
+  micrometer-input:
+    enabled: true
+    poll-interval: 2s
+    meters:
+      - name: checkout.queue.size
+        type: GAUGE
+        service: checkout-service
+        metric: queue-size-micrometer
+        operation: "POST /checkout"
+        instance: checkout-api-1
+        kind: SIZE
+        tags:
+          operation: "POST /checkout"
+          component: checkout
   detectors-enabled: true
   detectors:
     - name: latency-page-hinkley
@@ -55,6 +69,23 @@ driftguard:
       delta: 0.1
       warning-threshold: 25.0
       critical-threshold: 50.0
+      alpha: 0.05
+      emission-policy:
+        min-consecutive-signals: 1
+        cooldown: 12s
+        recovery-consecutive-normal: 3
+    - name: queue-size-micrometer-page-hinkley
+      enabled: true
+      algorithm: page-hinkley
+      profile: adaptive
+      adaptive-calibration-samples: 20
+      services: [checkout-service]
+      metrics: [queue-size-micrometer]
+      operations: ["POST /checkout"]
+      warmup-samples: 8
+      delta: 0.1
+      warning-threshold: 25.0
+      critical-threshold: 60.0
       alpha: 0.05
       emission-policy:
         min-consecutive-signals: 1
