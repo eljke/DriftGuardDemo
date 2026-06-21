@@ -13,7 +13,7 @@
         <java.version>21</java.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <spring-boot.version>4.0.6</spring-boot.version>
-        <driftguard.version>1.0.0-SNAPSHOT</driftguard.version>
+        <driftguard.version>1.0.0</driftguard.version>
         <junit.version>5.12.2</junit.version>
         <lombok.version>1.18.38</lombok.version>
         <springdoc.version>3.0.3</springdoc.version>
@@ -36,17 +36,17 @@
 
     <dependencies>
         <dependency>
-            <groupId>ru.eljke</groupId>
+            <groupId>io.github.eljke</groupId>
             <artifactId>driftguard-spring-boot-starter</artifactId>
             <version>${driftguard.version}</version>
         </dependency>
         <dependency>
-            <groupId>ru.eljke</groupId>
+            <groupId>io.github.eljke</groupId>
             <artifactId>driftguard-kafka</artifactId>
             <version>${driftguard.version}</version>
         </dependency>
         <dependency>
-            <groupId>ru.eljke</groupId>
+            <groupId>io.github.eljke</groupId>
             <artifactId>driftguard-testkit</artifactId>
             <version>${driftguard.version}</version>
         </dependency>

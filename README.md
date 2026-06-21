@@ -5,15 +5,6 @@ DriftGuard Demo is a standalone Spring Boot application that consumes the DriftG
 - `Checkout Service`: a direct embedded integration where business operations publish `MetricPoint` values to DriftGuard in-process.
 - `Kafka Service`: a stream-processing integration where service producers publish `MetricPoint` messages to Kafka and a Kafka Streams topology emits `DriftEvent` alerts.
 
-## Prerequisite
-
-Install the local DriftGuard library artifacts first:
-
-```bash
-cd ../DriftGuard
-./mvnw install
-```
-
 ## Run Locally
 
 ```bash
@@ -47,8 +38,8 @@ Synthetic and overview lab screens are still available for algorithm demonstrati
 docker compose up --build
 ```
 
-The Docker build uses the sibling `../DriftGuard` checkout as a BuildKit context,
-installs the library inside the Maven build stage and then packages this demo app.
+The Docker build resolves the published DriftGuard artifacts from Maven Central
+and then packages this demo app.
 
 Services:
 
